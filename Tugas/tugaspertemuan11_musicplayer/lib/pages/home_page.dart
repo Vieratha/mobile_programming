@@ -34,6 +34,11 @@ class _HomePageState extends State<HomePage> {
   int currentIndex = -1;
   bool isLoadingAudio = false;
 
+  // Ini bagian untuk mengelola data lirik
+  Map<String, dynamic>? lyrics;
+  bool isLoadingLyrics = false;
+  int lyricsRequestId = 0;
+
   // Ini bagian untuk mengatur proses pergantian lagu
   int audioRequestId = 0;
   int searchRequestId = 0;
@@ -99,10 +104,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // ==========================================
-  // BAGIAN AUDIO PLAYER
-  // ==========================================
-
   // Ini bagian untuk memutar lagu yang dipilih
   Future<void> putarLagu(
       Map<String, dynamic> song,
@@ -131,6 +132,9 @@ class _HomePageState extends State<HomePage> {
       currentIndex = index;
       isLoadingAudio = true;
     });
+
+    // Mengambil lirik untuk lagu yang sedang dipilih
+    unawaited(ambilLirik(song));
 
     // Memasukkan proses pergantian lagu ke dalam antrean
     audioQueue = audioQueue.then((_) async {
@@ -180,6 +184,43 @@ class _HomePageState extends State<HomePage> {
     await audioQueue;
   }
 
+  // Ini bagian untuk mengambil lirik lagu
+  Future<void> ambilLirik(
+      Map<String, dynamic> song,
+      ) async {
+    // Membuat nomor permintaan lirik baru
+    final int thisRequest = ++lyricsRequestId;
+
+    setState(() {
+      lyrics = null;
+      isLoadingLyrics = true;
+    });
+
+    try {
+      // Mengambil data lirik melalui MusicApi
+      final hasil = await musicApi.cariLirik(song);
+
+      // Memastikan hasil masih untuk lagu yang sedang dipilih
+      if (!mounted || thisRequest != lyricsRequestId) return;
+
+      setState(() {
+        lyrics = hasil;
+        isLoadingLyrics = false;
+      });
+
+    } catch (e) {
+      debugPrint('Lyrics error: $e');
+
+      if (!mounted || thisRequest != lyricsRequestId) return;
+
+      setState(() {
+        lyrics = null;
+        isLoadingLyrics = false;
+      });
+    }
+  }
+
+
   // Ini bagian untuk memutar lagu berikutnya
   void laguBerikutnya() {
     if (currentIndex >= 0 &&
@@ -227,10 +268,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // ==========================================
-  // BAGIAN NAVIGASI
-  // ==========================================
-
   // Ini bagian untuk memilih menu
   void pilihMenu(int index) {
     setState(() {
@@ -259,16 +296,17 @@ class _HomePageState extends State<HomePage> {
         onPrevious: laguSebelumnya,
         onNext: laguBerikutnya,
         onPlayPause: togglePlayPause,
+
+        // Data lirik
+        lyrics: lyrics,
+        isLoadingLyrics: isLoadingLyrics,
       );
+
 
     } else {
       return halamanBeranda();
     }
   }
-
-  // ==========================================
-  // BAGIAN KONTEN HOME
-  // ==========================================
 
   // Ini bagian untuk menampilkan halaman Home
   Widget halamanBeranda() {
@@ -412,10 +450,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  // ==========================================
-  // BAGIAN TAMPILAN UTAMA
-  // ==========================================
 
   @override
   Widget build(BuildContext context) {
