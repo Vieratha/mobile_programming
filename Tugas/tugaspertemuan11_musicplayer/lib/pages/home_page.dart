@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import '../services/music_api.dart';
 
+import '../services/music_api.dart';
 import '../widgets/app_sidebar.dart';
 import '../widgets/app_header.dart';
 import '../widgets/mini_player.dart';
-import 'home_content_page.dart';
 import 'search_page.dart';
 import 'now_playing_page.dart';
 import 'library_page.dart';
@@ -19,14 +18,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   // Ini bagian navigasi aplikasi
   int selectedMenu = 0;
 
   // Ini bagian pencarian lagu
   final searchController = TextEditingController();
   final MusicApi musicApi = MusicApi();
-
   List songs = [];
   bool isLoading = false;
 
@@ -40,13 +37,11 @@ class _HomePageState extends State<HomePage> {
   // Ini bagian untuk mengatur proses pergantian lagu
   int audioRequestId = 0;
   int searchRequestId = 0;
-
   Future<void> audioQueue = Future<void>.value();
 
   @override
   void dispose() {
     searchController.dispose();
-
     // Mengakhiri audio player ketika halaman ditutup
     unawaited(player.dispose());
 
@@ -56,12 +51,10 @@ class _HomePageState extends State<HomePage> {
   // Ini bagian untuk mencari lagu
   Future<void> cariLagu() async {
     final keyword = searchController.text.trim();
-
     if (keyword.isEmpty) return;
 
     // Membuat nomor pencarian baru
     final int thisSearch = ++searchRequestId;
-
     setState(() {
       isLoading = true;
       selectedMenu = 1;
@@ -105,6 +98,10 @@ class _HomePageState extends State<HomePage> {
       );
     }
   }
+
+  // ==========================================
+  // BAGIAN AUDIO PLAYER
+  // ==========================================
 
   // Ini bagian untuk memutar lagu yang dipilih
   Future<void> putarLagu(
@@ -230,6 +227,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // ==========================================
+  // BAGIAN NAVIGASI
+  // ==========================================
+
   // Ini bagian untuk memilih menu
   void pilihMenu(int index) {
     setState(() {
@@ -261,11 +262,160 @@ class _HomePageState extends State<HomePage> {
       );
 
     } else {
-      return HomeContentPage(
-        onExplore: () => pilihMenu(1),
-      );
+      return halamanBeranda();
     }
   }
+
+  // ==========================================
+  // BAGIAN KONTEN HOME
+  // ==========================================
+
+  // Ini bagian untuk menampilkan halaman Home
+  Widget halamanBeranda() {
+    final warna = Theme.of(context).colorScheme;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Good music, good mood.',
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              color: warna.onSurface,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+          Text(
+            'Your music, your moment.',
+            style: TextStyle(
+              fontSize: 15,
+              color: warna.onSurfaceVariant,
+            ),
+          ),
+
+          const SizedBox(height: 30),
+          Text(
+            'Discover music',
+            style: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+              color: warna.onSurface,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              kategoriCard('Pop', Icons.music_note),
+              kategoriCard('R&B', Icons.graphic_eq),
+              kategoriCard('Indie', Icons.album_outlined),
+            ],
+          ),
+
+          const SizedBox(height: 35),
+          Text(
+            'Start listening',
+            style: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+              color: warna.onSurface,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: warna.surface,
+              borderRadius: BorderRadius.circular(14),
+            ),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.headphones,
+                  size: 35,
+                  color: warna.primary,
+                ),
+
+                const SizedBox(height: 14),
+                Text(
+                  'Find your next favorite song.',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: warna.onSurface,
+                  ),
+                ),
+
+                const SizedBox(height: 7),
+                Text(
+                  'Search for songs and artists to start exploring.',
+                  style: TextStyle(
+                    color: warna.onSurfaceVariant,
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+                ElevatedButton(
+                  onPressed: () => pilihMenu(1),
+                  child: const Text('Explore music'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Ini bagian untuk membuat kartu kategori
+  Widget kategoriCard(String title, IconData icon) {
+    final warna = Theme.of(context).colorScheme;
+
+    return Container(
+      width: 145,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: warna.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: warna.outline),
+      ),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            color: warna.primary,
+            size: 27,
+          ),
+
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: warna.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // BAGIAN TAMPILAN UTAMA
+  // ==========================================
 
   @override
   Widget build(BuildContext context) {
@@ -278,6 +428,7 @@ class _HomePageState extends State<HomePage> {
         return Scaffold(
           body: SafeArea(
             child: isDesktop
+
             // Ini bagian layout desktop
                 ? Row(
               children: [
@@ -320,9 +471,11 @@ class _HomePageState extends State<HomePage> {
                   controller: searchController,
                   onSearch: cariLagu,
                 ),
+
                 Expanded(
                   child: halamanUtama(),
                 ),
+
                 MiniPlayer(
                   player: player,
                   currentSong: currentSong,
