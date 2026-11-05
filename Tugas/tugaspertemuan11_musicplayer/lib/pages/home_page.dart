@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../services/local_storage.dart';
 import '../services/music_api.dart';
 import '../widgets/app_sidebar.dart';
 import '../widgets/app_header.dart';
@@ -46,6 +47,29 @@ class _HomePageState extends State<HomePage> {
   IconData avatarProfil = Icons.person;
 
   @override
+  void initState() {
+    super.initState();
+    muatDataTersimpan();
+  }
+
+  // Mengambil profil dan Favorite saat aplikasi dibuka.
+  Future<void> muatDataTersimpan() async {
+    final profil = await LocalStorage.ambilProfil();
+    final favorite = await LocalStorage.ambilFavorite();
+
+    if (!mounted) return;
+
+    setState(() {
+      namaProfil = profil['nama'];
+      emailProfil = profil['email'];
+      bioProfil = profil['bio'];
+      avatarProfil = profil['avatar'];
+
+      favoriteSongs = favorite;
+    });
+  }
+
+  @override
   void dispose() {
     searchController.dispose();
     player.dispose();
@@ -68,8 +92,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Mengubah status Favorite
-  void toggleFavorite(Map<String, dynamic> song) {
+  // Mengubah dan menyimpan status Favorite.
+  Future<void> toggleFavorite(Map<String, dynamic> song) async {
     setState(() {
       if (isFavorite(song)) {
         favoriteSongs.removeWhere(
@@ -79,21 +103,30 @@ class _HomePageState extends State<HomePage> {
         favoriteSongs.add(song);
       }
     });
+
+    await LocalStorage.simpanFavorite(favoriteSongs);
   }
 
-  // Menyimpan data profil
-  void simpanDataProfil(
+  // Menyimpan perubahan profil ke aplikasi dan perangkat.
+  Future<void> simpanDataProfil(
       String nama,
       String email,
       String bio,
       IconData avatar,
-      ) {
+      ) async {
     setState(() {
       namaProfil = nama;
       emailProfil = email;
       bioProfil = bio;
       avatarProfil = avatar;
     });
+
+    await LocalStorage.simpanProfil(
+      nama: nama,
+      email: email,
+      bio: bio,
+      avatar: avatar,
+    );
   }
 
   // Mengambil lagu dari iTunes API
