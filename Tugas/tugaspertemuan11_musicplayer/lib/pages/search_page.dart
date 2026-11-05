@@ -74,7 +74,9 @@ class SearchPage extends StatelessWidget {
                       size: 55,
                       color: warna.onSurfaceVariant,
                     ),
+
                     const SizedBox(height: 12),
+
                     Text(
                       'Search for your favorite music',
                       style: TextStyle(
@@ -165,6 +167,9 @@ class SearchPage extends StatelessWidget {
                         ),
 
                         IconButton(
+                          tooltip: isSelected
+                              ? 'Currently selected'
+                              : 'Play song',
                           icon: Icon(
                             isSelected
                                 ? Icons.equalizer

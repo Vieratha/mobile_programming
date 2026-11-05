@@ -18,10 +18,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Mengatur halaman yang sedang dipilih
+  // Menu: Home = 0, Search = 1, Library = 2,
+  // Now Playing = 3, Profile = 4
   int selectedMenu = 0;
 
-  // Mengelola kolom pencarian
   final TextEditingController searchController =
   TextEditingController();
 
@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
   // Menyimpan lagu favorit
   List<Map<String, dynamic>> favoriteSongs = [];
 
-  // Mengatur pemutar musik
+  // Pemutar musik
   final AudioPlayer player = AudioPlayer();
 
   Map<String, dynamic>? currentSong;
@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // Mengambil artwork dengan resolusi lebih tinggi
+  // Mengubah URL artwork menjadi resolusi lebih tinggi
   String artworkHD(Map<String, dynamic> song) {
     final String url = song['artworkUrl100'] ?? '';
 
@@ -57,14 +57,14 @@ class _HomePageState extends State<HomePage> {
         .replaceAll('100x100', '600x600');
   }
 
-  // Memeriksa apakah lagu sudah menjadi favorit
+  // Memeriksa apakah lagu menjadi favorit
   bool isFavorite(Map<String, dynamic> song) {
     return favoriteSongs.any(
           (item) => item['trackId'] == song['trackId'],
     );
   }
 
-  // Menambahkan atau menghapus lagu dari favorit
+  // Menambahkan atau menghapus lagu favorit
   void toggleFavorite(Map<String, dynamic> song) {
     setState(() {
       if (isFavorite(song)) {
@@ -77,14 +77,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Mengambil data lagu dari iTunes API
+  // Mengambil lagu dari iTunes API
   Future<void> cariLagu() async {
     final keyword = searchController.text.trim();
     final messenger = ScaffoldMessenger.of(context);
 
-    if (keyword.isEmpty) {
-      return;
-    }
+    if (keyword.isEmpty) return;
 
     setState(() {
       isLoading = true;
@@ -96,7 +94,6 @@ class _HomePageState extends State<HomePage> {
 
       if (!mounted) return;
 
-      // Mengubah URL artwork menjadi resolusi lebih tinggi
       final hasilHD = hasil.map((item) {
         final song = Map<String, dynamic>.from(item);
 
@@ -125,13 +122,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Mencari lagu berdasarkan kategori musik
+  // Mencari musik berdasarkan kategori
   Future<void> cariKategori(String kategori) async {
     searchController.text = kategori;
     await cariLagu();
   }
 
-  // Memutar lagu yang dipilih
+  // Memutar lagu tanpa berpindah halaman
   Future<void> putarLagu(
       Map<String, dynamic> song,
       int index,
@@ -168,10 +165,10 @@ class _HomePageState extends State<HomePage> {
 
       setState(() {
         isLoadingAudio = false;
-        selectedMenu = 3;
         isPlaying = true;
       });
 
+      // Memutar preview lagu
       await player.play();
 
       if (!mounted) return;
@@ -199,7 +196,8 @@ class _HomePageState extends State<HomePage> {
 
   // Memutar lagu berikutnya
   Future<void> laguBerikutnya() async {
-    if (currentIndex < songs.length - 1 && currentIndex >= 0) {
+    if (currentIndex >= 0 &&
+        currentIndex < songs.length - 1) {
       final nextIndex = currentIndex + 1;
 
       await putarLagu(
@@ -211,7 +209,8 @@ class _HomePageState extends State<HomePage> {
 
   // Memutar lagu sebelumnya
   Future<void> laguSebelumnya() async {
-    if (currentIndex > 0 && currentIndex < songs.length) {
+    if (currentIndex > 0 &&
+        currentIndex < songs.length) {
       final previousIndex = currentIndex - 1;
 
       await putarLagu(
@@ -223,9 +222,7 @@ class _HomePageState extends State<HomePage> {
 
   // Mengatur tombol Play dan Pause
   Future<void> togglePlayPause() async {
-    if (currentSong == null || isLoadingAudio) {
-      return;
-    }
+    if (currentSong == null || isLoadingAudio) return;
 
     if (player.playing) {
       await player.pause();
@@ -258,14 +255,21 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Mengubah halaman berdasarkan menu
+  // Mengubah halaman
   void pilihMenu(int index) {
     setState(() {
       selectedMenu = index;
     });
   }
 
-  // Menentukan halaman yang ditampilkan
+  // Kembali ke halaman sebelumnya
+  void kembaliDariNowPlaying() {
+    setState(() {
+      selectedMenu = 1;
+    });
+  }
+
+  // Menentukan halaman utama
   Widget halamanUtama() {
     if (selectedMenu == 1) {
       return SearchPage(
@@ -278,7 +282,13 @@ class _HomePageState extends State<HomePage> {
         isFavorite: isFavorite,
       );
     } else if (selectedMenu == 2) {
-      return const LibraryPage();
+      return LibraryPage(
+        // favoriteSongs: favoriteSongs,
+        // currentSong: currentSong,
+        // isFavorite: isFavorite,
+        // onFavoriteTap: toggleFavorite,
+        // onSelectSong: putarLagu,
+      );
     } else if (selectedMenu == 3) {
       return NowPlayingPage(
         currentSong: currentSong,
@@ -287,12 +297,13 @@ class _HomePageState extends State<HomePage> {
         onPrevious: laguSebelumnya,
         onNext: laguBerikutnya,
         onPlayPause: togglePlayPause,
+        onBack: kembaliDariNowPlaying,
       );
     } else if (selectedMenu == 4) {
       return const ProfilePage();
-    } else {
-      return halamanBeranda();
     }
+
+    return halamanBeranda();
   }
 
   // Menampilkan halaman Home
@@ -409,7 +420,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Membuat kartu kategori musik yang bisa dipilih
+  // Membuat kartu kategori musik
   Widget kategoriCard(String title, IconData icon) {
     final warna = Theme.of(context).colorScheme;
 
@@ -453,14 +464,15 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Menentukan tampilan desktop atau mobile
         final bool isDesktop = constraints.maxWidth >= 850;
+
+        // Search bar hanya tampil di Search dan Library
+        final bool tampilkanSearch =
+            selectedMenu == 1 || selectedMenu == 2;
 
         return Scaffold(
           body: SafeArea(
             child: isDesktop
-
-            // Tampilan desktop
                 ? Row(
               children: [
                 AppSidebar(
@@ -471,11 +483,28 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: Column(
                     children: [
-                      AppHeader(
-                        controller: searchController,
-                        onSearch: cariLagu,
-                        onProfileTap: () => pilihMenu(4),
-                      ),
+                      if (tampilkanSearch)
+                        AppHeader(
+                          controller: searchController,
+                          onSearch: cariLagu,
+                          onProfileTap: () => pilihMenu(4),
+                        )
+                      else
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: const EdgeInsets.all(18),
+                            child: IconButton(
+                              tooltip: 'Profile',
+                              onPressed: () => pilihMenu(4),
+                              icon: const Icon(
+                                Icons.person_outline,
+                              ),
+                              color: Theme.of(context)
+                                  .colorScheme.primary,
+                            ),
+                          ),
+                        ),
 
                       Expanded(
                         child: halamanUtama(),
@@ -495,15 +524,33 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             )
-
-            // Tampilan mobile
                 : Column(
               children: [
-                AppHeader(
-                  controller: searchController,
-                  onSearch: cariLagu,
-                  onProfileTap: () => pilihMenu(4),
-                ),
+                if (tampilkanSearch)
+                  AppHeader(
+                    controller: searchController,
+                    onSearch: cariLagu,
+                    onProfileTap: () => pilihMenu(4),
+                  )
+                else
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 8,
+                      ),
+                      child: IconButton(
+                        tooltip: 'Profile',
+                        onPressed: () => pilihMenu(4),
+                        icon: const Icon(
+                          Icons.person_outline,
+                        ),
+                        color: Theme.of(context)
+                            .colorScheme.primary,
+                      ),
+                    ),
+                  ),
 
                 Expanded(
                   child: halamanUtama(),
@@ -529,12 +576,10 @@ class _HomePageState extends State<HomePage> {
                       selectedIcon: Icon(Icons.home),
                       label: 'Home',
                     ),
-
                     NavigationDestination(
                       icon: Icon(Icons.search),
                       label: 'Search',
                     ),
-
                     NavigationDestination(
                       icon: Icon(Icons.library_music_outlined),
                       selectedIcon: Icon(Icons.library_music),

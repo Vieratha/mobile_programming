@@ -25,7 +25,6 @@ class AppHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Menampilkan nama aplikasi pada layar mobile
           if (isMobile) ...[
             Text(
               'Ivylodia',
@@ -38,7 +37,6 @@ class AppHeader extends StatelessWidget {
             const SizedBox(width: 18),
           ],
 
-          // Kolom pencarian lagu
           Expanded(
             child: Container(
               height: 46,
@@ -71,7 +69,6 @@ class AppHeader extends StatelessWidget {
 
           const SizedBox(width: 18),
 
-          // Avatar dapat ditekan untuk membuka halaman profil
           InkWell(
             onTap: onProfileTap,
             borderRadius: BorderRadius.circular(30),
