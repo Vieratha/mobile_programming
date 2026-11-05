@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class AppHeader extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSearch;
+  final VoidCallback onProfileTap;
 
   const AppHeader({
     super.key,
     required this.controller,
     required this.onSearch,
+    required this.onProfileTap,
   });
 
   @override
@@ -21,9 +23,9 @@ class AppHeader extends StatelessWidget {
         horizontal: 28,
         vertical: 18,
       ),
-
       child: Row(
         children: [
+          // Menampilkan nama aplikasi pada layar mobile
           if (isMobile) ...[
             Text(
               'Ivylodia',
@@ -36,6 +38,7 @@ class AppHeader extends StatelessWidget {
             const SizedBox(width: 18),
           ],
 
+          // Kolom pencarian lagu
           Expanded(
             child: Container(
               height: 46,
@@ -44,17 +47,14 @@ class AppHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: warna.outline),
               ),
-
               child: TextField(
                 controller: controller,
                 onSubmitted: (_) => onSearch(),
-
                 decoration: InputDecoration(
                   hintText: 'Search songs, artists...',
                   hintStyle: TextStyle(
                     color: warna.onSurfaceVariant,
                   ),
-
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.arrow_forward),
@@ -70,11 +70,17 @@ class AppHeader extends StatelessWidget {
           ),
 
           const SizedBox(width: 18),
-          CircleAvatar(
-            backgroundColor: warna.secondaryContainer,
-            child: Icon(
-              Icons.person_outline,
-              color: warna.primary,
+
+          // Avatar dapat ditekan untuk membuka halaman profil
+          InkWell(
+            onTap: onProfileTap,
+            borderRadius: BorderRadius.circular(30),
+            child: CircleAvatar(
+              backgroundColor: warna.secondaryContainer,
+              child: Icon(
+                Icons.person_outline,
+                color: warna.primary,
+              ),
             ),
           ),
         ],

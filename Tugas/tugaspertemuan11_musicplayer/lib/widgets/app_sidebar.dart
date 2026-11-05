@@ -31,7 +31,6 @@ class AppSidebar extends StatelessWidget {
           ),
 
           const SizedBox(height: 40),
-
           Text(
             'MENU',
             style: TextStyle(
@@ -43,9 +42,24 @@ class AppSidebar extends StatelessWidget {
           ),
 
           const SizedBox(height: 15),
+          // Menu utama aplikasi
           menuItem(context, Icons.home_outlined, 'Home', 0),
           menuItem(context, Icons.search, 'Search', 1),
-          menuItem(context, Icons.library_music_outlined, 'Your Library', 2),
+          menuItem(
+            context,
+            Icons.library_music_outlined,
+            'Your Library',
+            2,
+          ),
+
+          const SizedBox(height: 8),
+          // Menu untuk membuka profil pengguna
+          menuItem(
+            context,
+            Icons.person_outline,
+            'Profile',
+            4,
+          ),
 
           const Spacer(),
           const Divider(),
@@ -61,7 +75,7 @@ class AppSidebar extends StatelessWidget {
     );
   }
 
-  // Ini bagian untuk membuat item navigasi
+  // Membuat item navigasi sidebar
   Widget menuItem(
       BuildContext context,
       IconData icon,
@@ -79,17 +93,21 @@ class AppSidebar extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-
         leading: Icon(
           icon,
-          color: active ? warna.primary : warna.onSurfaceVariant,
+          color: active
+              ? warna.primary
+              : warna.onSurfaceVariant,
         ),
-
         title: Text(
           title,
           style: TextStyle(
-            color: active ? warna.primary : warna.onSurface,
-            fontWeight: active ? FontWeight.bold : FontWeight.normal,
+            color: active
+                ? warna.primary
+                : warna.onSurface,
+            fontWeight: active
+                ? FontWeight.bold
+                : FontWeight.normal,
           ),
         ),
         onTap: () => onMenuSelected(index),

@@ -25,6 +25,59 @@ class MusicApi {
     }
   }
 
+  // Menyamakan format teks untuk proses pencocokan
+  String normalisasi(String teks) {
+    return teks
+        .toLowerCase()
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  // Memastikan hasil LRCLIB berasal dari rekaman yang sesuai
+  bool cocokkanLirik(
+      Map<String, dynamic> hasil,
+      String judul,
+      String artis,
+      String album,
+      int durasiDetik,
+      ) {
+    final judulHasil =
+        hasil['trackName']?.toString() ?? '';
+
+    final artisHasil =
+        hasil['artistName']?.toString() ?? '';
+
+    final albumHasil =
+        hasil['albumName']?.toString() ?? '';
+
+    final durasiHasil =
+    (hasil['duration'] as num?)?.toDouble();
+
+    // Judul dan artis harus cocok
+    if (normalisasi(judulHasil) != normalisasi(judul)) {
+      return false;
+    }
+
+    if (normalisasi(artisHasil) != normalisasi(artis)) {
+      return false;
+    }
+
+    // Durasi harus berbeda maksimal 2 detik
+    if (durasiHasil == null ||
+        (durasiHasil - durasiDetik).abs() > 2) {
+      return false;
+    }
+
+    // Album diperiksa jika kedua sumber menyediakan nama album
+    if (album.isNotEmpty && albumHasil.isNotEmpty) {
+      if (normalisasi(albumHasil) != normalisasi(album)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   // Ini bagian untuk mengambil lirik lagu melalui LRCLIB
   Future<Map<String, dynamic>?> cariLirik(
       Map<String, dynamic> song,
@@ -39,25 +92,28 @@ class MusicApi {
 
     final durasiDetik = (durasiMillis / 1000).round();
 
-    if (judul.isEmpty || artis.isEmpty) {
+    if (judul.isEmpty ||
+        artis.isEmpty ||
+        durasiDetik <= 0) {
       return null;
     }
 
-    // Menyiapkan parameter pencarian lirik
+    // Menyiapkan parameter pencarian LRCLIB
     final parameter = <String, String>{
       'track_name': judul,
       'artist_name': artis,
+      'duration': durasiDetik.toString(),
     };
 
     if (album.isNotEmpty) {
       parameter['album_name'] = album;
     }
 
-    if (durasiDetik > 0) {
-      parameter['duration'] = durasiDetik.toString();
-    }
+    final headers = {
+      'X-User-Agent': 'Ivylodia Music Player/1.0',
+    };
 
-    // Mencoba mencari kecocokan lagu secara langsung
+    // Tahap pertama: mencari kecocokan berdasarkan signature lagu
     final url = Uri.https(
       'lrclib.net',
       '/api/get',
@@ -66,53 +122,81 @@ class MusicApi {
 
     final response = await http.get(
       url,
-      headers: {
-        'X-User-Agent': 'Ivylodia Music Player/1.0',
-      },
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
-      if (data is Map<String, dynamic>) {
+      if (data is Map<String, dynamic> &&
+          cocokkanLirik(
+            data,
+            judul,
+            artis,
+            album,
+            durasiDetik,
+          )) {
         return data;
       }
     }
 
-    // Jika tidak ditemukan, mencoba pencarian alternatif
-    if (response.statusCode == 404) {
+    if (response.statusCode == 429) {
+      throw Exception(
+        'Terlalu banyak permintaan lirik. Coba lagi nanti.',
+      );
+    }
+
+    if (response.statusCode >= 500) {
+      throw Exception(
+        'Server lirik sedang mengalami gangguan.',
+      );
+    }
+
+    // Tahap kedua: pencarian alternatif
+    // Hasil tetap harus melewati pemeriksaan kecocokan
+    if (response.statusCode == 404 ||
+        response.statusCode == 200) {
       final searchUrl = Uri.https(
         'lrclib.net',
         '/api/search',
         {
           'track_name': judul,
           'artist_name': artis,
+          if (album.isNotEmpty) 'album_name': album,
         },
       );
 
       final searchResponse = await http.get(
         searchUrl,
-        headers: {
-          'X-User-Agent': 'Ivylodia Music Player/1.0',
-        },
+        headers: headers,
       );
+
+      if (searchResponse.statusCode == 429) {
+        throw Exception(
+          'Terlalu banyak permintaan lirik. Coba lagi nanti.',
+        );
+      }
+
+      if (searchResponse.statusCode >= 500) {
+        throw Exception(
+          'Server lirik sedang mengalami gangguan.',
+        );
+      }
 
       if (searchResponse.statusCode == 200) {
         final hasil = jsonDecode(searchResponse.body);
 
         if (hasil is List) {
-          // Memilih hasil yang judul dan artisnya cocok
           for (final item in hasil) {
             if (item is! Map<String, dynamic>) continue;
 
-            final judulHasil =
-                item['trackName']?.toString().toLowerCase() ?? '';
-
-            final artisHasil =
-                item['artistName']?.toString().toLowerCase() ?? '';
-
-            if (judulHasil == judul.toLowerCase() &&
-                artisHasil == artis.toLowerCase()) {
+            if (cocokkanLirik(
+              item,
+              judul,
+              artis,
+              album,
+              durasiDetik,
+            )) {
               return item;
             }
           }
@@ -120,14 +204,7 @@ class MusicApi {
       }
     }
 
-    if (response.statusCode == 429) {
-      throw Exception('Terlalu banyak permintaan lirik. Coba lagi nanti.');
-    }
-
-    if (response.statusCode >= 500) {
-      throw Exception('Server lirik sedang mengalami gangguan.');
-    }
-
+    // Tidak menemukan rekaman yang cukup cocok
     return null;
   }
 }

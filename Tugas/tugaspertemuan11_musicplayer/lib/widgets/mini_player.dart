@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 
 class MiniPlayer extends StatelessWidget {
-  final AudioPlayer player;
   final Map<String, dynamic>? currentSong;
   final bool isLoadingAudio;
+  final bool isPlaying;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
   final VoidCallback onPlayPause;
@@ -12,9 +11,9 @@ class MiniPlayer extends StatelessWidget {
 
   const MiniPlayer({
     super.key,
-    required this.player,
     required this.currentSong,
     required this.isLoadingAudio,
+    required this.isPlaying,
     required this.onPrevious,
     required this.onNext,
     required this.onPlayPause,
@@ -36,7 +35,7 @@ class MiniPlayer extends StatelessWidget {
       ),
       child: Row(
         children: [
-          //Cover lagu
+          // Cover lagu
           if (currentSong != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
@@ -45,8 +44,7 @@ class MiniPlayer extends StatelessWidget {
                 width: 48,
                 height: 48,
                 fit: BoxFit.cover,
-
-                errorBuilder: (_, __, ___) {
+                errorBuilder: (_, _, _) {
                   return Container(
                     width: 48,
                     height: 48,
@@ -67,6 +65,7 @@ class MiniPlayer extends StatelessWidget {
             ),
 
           const SizedBox(width: 12),
+
           // Informasi lagu
           Expanded(
             child: InkWell(
@@ -86,8 +85,10 @@ class MiniPlayer extends StatelessWidget {
                   ),
 
                   Text(
-                    currentSong?['artistName'] ?? 'Choose a song to begin',
+                    currentSong?['artistName'] ??
+                        'Choose a song to begin',
                     maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: warna.onSurfaceVariant,
                       fontSize: 12,
@@ -103,26 +104,20 @@ class MiniPlayer extends StatelessWidget {
             icon: const Icon(Icons.skip_previous),
           ),
 
-          // Tombol play dan pause mengikuti kondisi audio
-          StreamBuilder<PlayerState>(
-            stream: player.playerStateStream,
-            builder: (context, snapshot) {
-              final playing = snapshot.data?.playing ?? false;
-
-              return IconButton(
-                onPressed: currentSong == null || isLoadingAudio
-                    ? null
-                    : onPlayPause,
-                icon: Icon(
-                  playing
-                      ? Icons.pause_circle_filled
-                      : Icons.play_circle_fill,
-                  color: warna.primary,
-                  size: 40,
-                ),
-              );
-            },
+          // Tombol Play dan Pause
+          IconButton(
+            onPressed: currentSong == null || isLoadingAudio
+                ? null
+                : onPlayPause,
+            icon: Icon(
+              isPlaying
+                  ? Icons.pause_circle_filled
+                  : Icons.play_circle_fill,
+              color: warna.primary,
+              size: 40,
+            ),
           ),
+
           IconButton(
             onPressed: currentSong == null ? null : onNext,
             icon: const Icon(Icons.skip_next),
