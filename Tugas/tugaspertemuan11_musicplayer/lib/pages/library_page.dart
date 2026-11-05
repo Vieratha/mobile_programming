@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/song_tile.dart';
+
 class LibraryPage extends StatelessWidget {
   final List<Map<String, dynamic>> favoriteSongs;
   final Map<String, dynamic>? currentSong;
@@ -17,14 +19,6 @@ class LibraryPage extends StatelessWidget {
     required this.onFavoriteTap,
     required this.onSelectSong,
   });
-
-  String artworkHD(Map<String, dynamic> song) {
-    final String url = song['artworkUrl100'] ?? '';
-
-    return url
-        .replaceAll('100x100bb', '600x600bb')
-        .replaceAll('100x100', '600x600');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,19 +42,14 @@ class LibraryPage extends StatelessWidget {
 
           Text(
             'Your favorite songs in one place.',
-            style: TextStyle(
-              color: warna.onSurfaceVariant,
-            ),
+            style: TextStyle(color: warna.onSurfaceVariant),
           ),
 
           const SizedBox(height: 25),
 
           Row(
             children: [
-              Icon(
-                Icons.favorite,
-                color: warna.primary,
-              ),
+              Icon(Icons.favorite, color: warna.primary),
 
               const SizedBox(width: 9),
 
@@ -105,9 +94,7 @@ class LibraryPage extends StatelessWidget {
                     Text(
                       'Add songs to your favorites from Search.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: warna.onSurfaceVariant,
-                      ),
+                      style: TextStyle(color: warna.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -123,92 +110,16 @@ class LibraryPage extends StatelessWidget {
                   final bool selected =
                       currentSong?['trackId'] == song['trackId'];
 
-                  // Equalizer hanya ketika lagu sedang diputar
-                  final bool sedangDiputar =
-                      selected && isPlaying;
-
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 5,
-                    ),
-
-                    selected: selected,
-                    selectedTileColor: warna.secondaryContainer,
-
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        artworkHD(song),
-                        width: 55,
-                        height: 55,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) {
-                          return Container(
-                            width: 55,
-                            height: 55,
-                            color: warna.surface,
-                            child: Icon(
-                              Icons.music_note,
-                              color: warna.primary,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    title: Text(
-                      song['trackName'] ?? '-',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: warna.onSurface,
-                      ),
-                    ),
-
-                    subtitle: Text(
-                      song['artistName'] ?? '-',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: warna.onSurfaceVariant,
-                      ),
-                    ),
-
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          tooltip: sedangDiputar
-                              ? 'Currently playing'
-                              : 'Play song',
-                          onPressed: () {
-                            onSelectSong(song, index);
-                          },
-                          icon: Icon(
-                            sedangDiputar
-                                ? Icons.equalizer
-                                : Icons.play_circle_outline,
-                            color: warna.primary,
-                            size: 30,
-                          ),
-                        ),
-
-                        IconButton(
-                          tooltip: 'Remove from Favorites',
-                          onPressed: () => onFavoriteTap(song),
-                          icon: Icon(
-                            isFavorite(song)
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            color: warna.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    onTap: () {
+                  return SongTile(
+                    song: song,
+                    isSelected: selected,
+                    isPlaying: selected && isPlaying,
+                    isFavorite: isFavorite(song),
+                    onPlay: () {
                       onSelectSong(song, index);
+                    },
+                    onFavorite: () {
+                      onFavoriteTap(song);
                     },
                   );
                 },

@@ -45,21 +45,13 @@ class AppSidebar extends StatelessWidget {
           // Menu utama aplikasi
           menuItem(context, Icons.home_outlined, 'Home', 0),
           menuItem(context, Icons.search, 'Search', 1),
-          menuItem(
-            context,
-            Icons.library_music_outlined,
-            'Your Library',
-            2,
-          ),
+          menuItem(context, Icons.library_music_outlined, 'Your Library', 2),
 
           const Spacer(),
           const Divider(),
           Text(
             'IVYLODIA MUSIC',
-            style: TextStyle(
-              color: warna.onSurfaceVariant,
-              fontSize: 11,
-            ),
+            style: TextStyle(color: warna.onSurfaceVariant, fontSize: 11),
           ),
         ],
       ),
@@ -68,11 +60,11 @@ class AppSidebar extends StatelessWidget {
 
   // Membuat item navigasi sidebar
   Widget menuItem(
-      BuildContext context,
-      IconData icon,
-      String title,
-      int index,
-      ) {
+    BuildContext context,
+    IconData icon,
+    String title,
+    int index,
+  ) {
     final warna = Theme.of(context).colorScheme;
     final bool active = selectedMenu == index;
 
@@ -81,24 +73,16 @@ class AppSidebar extends StatelessWidget {
       child: ListTile(
         selected: active,
         selectedTileColor: warna.secondaryContainer,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         leading: Icon(
           icon,
-          color: active
-              ? warna.primary
-              : warna.onSurfaceVariant,
+          color: active ? warna.primary : warna.onSurfaceVariant,
         ),
         title: Text(
           title,
           style: TextStyle(
-            color: active
-                ? warna.primary
-                : warna.onSurface,
-            fontWeight: active
-                ? FontWeight.bold
-                : FontWeight.normal,
+            color: active ? warna.primary : warna.onSurface,
+            fontWeight: active ? FontWeight.bold : FontWeight.normal,
           ),
         ),
         onTap: () => onMenuSelected(index),

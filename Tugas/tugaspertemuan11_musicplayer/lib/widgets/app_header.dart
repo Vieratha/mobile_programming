@@ -21,10 +21,7 @@ class AppHeader extends StatelessWidget {
 
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 28,
-        vertical: 18,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
       child: Row(
         children: [
           if (isMobile) ...[
@@ -52,18 +49,14 @@ class AppHeader extends StatelessWidget {
                 onSubmitted: (_) => onSearch(),
                 decoration: InputDecoration(
                   hintText: 'Search songs, artists...',
-                  hintStyle: TextStyle(
-                    color: warna.onSurfaceVariant,
-                  ),
+                  hintStyle: TextStyle(color: warna.onSurfaceVariant),
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.arrow_forward),
                     onPressed: onSearch,
                   ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
             ),
@@ -77,10 +70,7 @@ class AppHeader extends StatelessWidget {
             borderRadius: BorderRadius.circular(30),
             child: CircleAvatar(
               backgroundColor: warna.secondaryContainer,
-              child: Icon(
-                avatarIcon,
-                color: warna.primary,
-              ),
+              child: Icon(avatarIcon, color: warna.primary),
             ),
           ),
         ],

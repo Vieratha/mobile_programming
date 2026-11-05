@@ -45,9 +45,7 @@ class MiniPlayer extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 22),
       decoration: BoxDecoration(
         color: warna.surface,
-        border: Border(
-          top: BorderSide(color: warna.outline),
-        ),
+        border: Border(top: BorderSide(color: warna.outline)),
       ),
       child: Row(
         children: [
@@ -65,20 +63,13 @@ class MiniPlayer extends StatelessWidget {
                     width: 48,
                     height: 48,
                     color: warna.secondaryContainer,
-                    child: Icon(
-                      Icons.music_note,
-                      color: warna.primary,
-                    ),
+                    child: Icon(Icons.music_note, color: warna.primary),
                   );
                 },
               ),
             )
           else
-            Icon(
-              avatarIcon,
-              color: warna.primary,
-              size: 30,
-            ),
+            Icon(avatarIcon, color: warna.primary, size: 30),
 
           const SizedBox(width: 12),
 
@@ -101,8 +92,7 @@ class MiniPlayer extends StatelessWidget {
                   ),
 
                   Text(
-                    currentSong?['artistName'] ??
-                        'Choose a song to begin',
+                    currentSong?['artistName'] ?? 'Choose a song to begin',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -117,18 +107,11 @@ class MiniPlayer extends StatelessWidget {
 
           // Tombol Favorite
           IconButton(
-            tooltip: isFavorite
-                ? 'Remove from Favorites'
-                : 'Add to Favorites',
-            onPressed:
-            currentSong == null ? null : onFavoriteTap,
+            tooltip: isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
+            onPressed: currentSong == null ? null : onFavoriteTap,
             icon: Icon(
-              isFavorite
-                  ? Icons.favorite
-                  : Icons.favorite_border,
-              color: isFavorite
-                  ? warna.primary
-                  : warna.onSurfaceVariant,
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? warna.primary : warna.onSurfaceVariant,
             ),
           ),
 
@@ -146,9 +129,7 @@ class MiniPlayer extends StatelessWidget {
                 ? null
                 : onPlayPause,
             icon: Icon(
-              isPlaying
-                  ? Icons.pause_circle_filled
-                  : Icons.play_circle_fill,
+              isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
               color: warna.primary,
               size: 40,
             ),

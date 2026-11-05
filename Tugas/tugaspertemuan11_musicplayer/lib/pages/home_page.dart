@@ -21,26 +21,24 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int selectedMenu = 0;
 
-  final TextEditingController searchController =
-  TextEditingController();
+  final TextEditingController searchController = TextEditingController();
 
   final MusicApi musicApi = MusicApi();
+  final AudioPlayer player = AudioPlayer();
 
   List songs = [];
   bool isLoading = false;
 
-  // Daftar lagu favorit
   List<Map<String, dynamic>> favoriteSongs = [];
-
-  // Pemutar musik
-  final AudioPlayer player = AudioPlayer();
 
   Map<String, dynamic>? currentSong;
   int currentIndex = -1;
+
   bool isLoadingAudio = false;
   bool isPlaying = false;
+  bool isDataLoaded = false;
 
-  // Data profil pengguna
+  // Data profil pengguna.
   String namaProfil = 'Indra Kurniawan';
   String emailProfil = 'vietha@gmail.com';
   String bioProfil = 'Music is part of my everyday life.';
@@ -54,19 +52,27 @@ class _HomePageState extends State<HomePage> {
 
   // Mengambil profil dan Favorite saat aplikasi dibuka.
   Future<void> muatDataTersimpan() async {
-    final profil = await LocalStorage.ambilProfil();
-    final favorite = await LocalStorage.ambilFavorite();
+    try {
+      final profil = await LocalStorage.ambilProfil();
+      final favorite = await LocalStorage.ambilFavorite();
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      namaProfil = profil['nama'];
-      emailProfil = profil['email'];
-      bioProfil = profil['bio'];
-      avatarProfil = profil['avatar'];
+      setState(() {
+        namaProfil = profil['nama'];
+        emailProfil = profil['email'];
+        bioProfil = profil['bio'];
+        avatarProfil = profil['avatar'];
+        favoriteSongs = favorite;
+        isDataLoaded = true;
+      });
+    } catch (e) {
+      if (!mounted) return;
 
-      favoriteSongs = favorite;
-    });
+      setState(() {
+        isDataLoaded = true;
+      });
+    }
   }
 
   @override
@@ -76,7 +82,7 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // Mengatur URL artwork resolusi tinggi
+  // Mengatur URL artwork resolusi tinggi.
   String artworkHD(Map<String, dynamic> song) {
     final String url = song['artworkUrl100'] ?? '';
 
@@ -85,35 +91,35 @@ class _HomePageState extends State<HomePage> {
         .replaceAll('100x100', '600x600');
   }
 
-  // Memeriksa status Favorite
+  // Memeriksa status Favorite.
   bool isFavorite(Map<String, dynamic> song) {
-    return favoriteSongs.any(
-          (item) => item['trackId'] == song['trackId'],
-    );
+    return favoriteSongs.any((item) => item['trackId'] == song['trackId']);
   }
 
   // Mengubah dan menyimpan status Favorite.
   Future<void> toggleFavorite(Map<String, dynamic> song) async {
     setState(() {
       if (isFavorite(song)) {
-        favoriteSongs.removeWhere(
-              (item) => item['trackId'] == song['trackId'],
-        );
+        favoriteSongs.removeWhere((item) => item['trackId'] == song['trackId']);
       } else {
         favoriteSongs.add(song);
       }
     });
 
-    await LocalStorage.simpanFavorite(favoriteSongs);
+    final daftarFavorite = favoriteSongs
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+
+    await LocalStorage.simpanFavorite(daftarFavorite);
   }
 
-  // Menyimpan perubahan profil ke aplikasi dan perangkat.
+  // Menyimpan perubahan profil.
   Future<void> simpanDataProfil(
-      String nama,
-      String email,
-      String bio,
-      IconData avatar,
-      ) async {
+    String nama,
+    String email,
+    String bio,
+    IconData avatar,
+  ) async {
     setState(() {
       namaProfil = nama;
       emailProfil = email;
@@ -129,7 +135,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Mengambil lagu dari iTunes API
+  // Mengambil lagu dari iTunes API.
   Future<void> cariLagu() async {
     final keyword = searchController.text.trim();
     final messenger = ScaffoldMessenger.of(context);
@@ -165,33 +171,26 @@ class _HomePageState extends State<HomePage> {
       });
 
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Gagal mengambil data lagu. Coba lagi.'),
-        ),
+        const SnackBar(content: Text('Gagal mengambil data lagu. Coba lagi.')),
       );
     }
   }
 
-  // Mencari musik berdasarkan kategori
+  // Mencari musik berdasarkan kategori.
   Future<void> cariKategori(String kategori) async {
     searchController.text = kategori;
     await cariLagu();
   }
 
-  // Memutar lagu tanpa berpindah halaman
-  Future<void> putarLagu(
-      Map<String, dynamic> song,
-      int index,
-      ) async {
+  // Memutar lagu tanpa berpindah halaman.
+  Future<void> putarLagu(Map<String, dynamic> song, int index) async {
     final String? audioUrl = song['previewUrl'];
     final messenger = ScaffoldMessenger.of(context);
 
     if (audioUrl == null || audioUrl.isEmpty) {
       messenger.showSnackBar(
         const SnackBar(
-          content: Text(
-            'Preview audio tidak tersedia untuk lagu ini.',
-          ),
+          content: Text('Preview audio tidak tersedia untuk lagu ini.'),
         ),
       );
       return;
@@ -235,27 +234,22 @@ class _HomePageState extends State<HomePage> {
 
       messenger.showSnackBar(
         const SnackBar(
-          content: Text(
-            'Audio gagal diputar. Coba pilih lagu lain.',
-          ),
+          content: Text('Audio gagal diputar. Coba pilih lagu lain.'),
         ),
       );
     }
   }
 
-  // Lagu berikutnya
+  // Memutar lagu berikutnya.
   Future<void> laguBerikutnya() async {
     if (currentIndex >= 0 && currentIndex < songs.length - 1) {
       final nextIndex = currentIndex + 1;
 
-      await putarLagu(
-        Map<String, dynamic>.from(songs[nextIndex]),
-        nextIndex,
-      );
+      await putarLagu(Map<String, dynamic>.from(songs[nextIndex]), nextIndex);
     }
   }
 
-  // Lagu sebelumnya
+  // Memutar lagu sebelumnya.
   Future<void> laguSebelumnya() async {
     if (currentIndex > 0 && currentIndex < songs.length) {
       final previousIndex = currentIndex - 1;
@@ -267,7 +261,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Play dan Pause
+  // Mengatur Play dan Pause.
   Future<void> togglePlayPause() async {
     if (currentSong == null || isLoadingAudio) return;
 
@@ -302,21 +296,21 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Mengubah halaman
+  // Mengubah halaman.
   void pilihMenu(int index) {
     setState(() {
       selectedMenu = index;
     });
   }
 
-  // Kembali dari Now Playing ke halaman sebelumnya
+  // Kembali dari Now Playing.
   void kembaliDariNowPlaying() {
     setState(() {
       selectedMenu = 1;
     });
   }
 
-  // Mengatur halaman utama
+  // Menentukan halaman yang ditampilkan.
   Widget halamanUtama() {
     if (selectedMenu == 1) {
       return SearchPage(
@@ -347,8 +341,7 @@ class _HomePageState extends State<HomePage> {
         currentSong: currentSong,
         isLoadingAudio: isLoadingAudio,
         isPlaying: isPlaying,
-        isFavorite: currentSong != null &&
-            isFavorite(currentSong!),
+        isFavorite: currentSong != null && isFavorite(currentSong!),
         onPrevious: laguSebelumnya,
         onNext: laguBerikutnya,
         onPlayPause: togglePlayPause,
@@ -375,7 +368,7 @@ class _HomePageState extends State<HomePage> {
     return halamanBeranda();
   }
 
-  // Home
+  // Menampilkan halaman Home.
   Widget halamanBeranda() {
     final warna = Theme.of(context).colorScheme;
 
@@ -397,10 +390,7 @@ class _HomePageState extends State<HomePage> {
 
           Text(
             'Your music, your moment.',
-            style: TextStyle(
-              fontSize: 15,
-              color: warna.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 15, color: warna.onSurfaceVariant),
           ),
 
           const SizedBox(height: 30),
@@ -449,11 +439,7 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.headphones,
-                  size: 35,
-                  color: warna.primary,
-                ),
+                Icon(Icons.headphones, size: 35, color: warna.primary),
 
                 const SizedBox(height: 14),
 
@@ -470,9 +456,7 @@ class _HomePageState extends State<HomePage> {
 
                 Text(
                   'Search for songs and artists to start exploring.',
-                  style: TextStyle(
-                    color: warna.onSurfaceVariant,
-                  ),
+                  style: TextStyle(color: warna.onSurfaceVariant),
                 ),
 
                 const SizedBox(height: 18),
@@ -489,7 +473,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Kartu kategori
+  // Membuat kartu kategori musik.
   Widget kategoriCard(String title, IconData icon) {
     final warna = Theme.of(context).colorScheme;
 
@@ -507,11 +491,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              color: warna.primary,
-              size: 27,
-            ),
+            Icon(icon, color: warna.primary, size: 27),
 
             const SizedBox(height: 12),
 
@@ -535,21 +515,77 @@ class _HomePageState extends State<HomePage> {
       builder: (context, constraints) {
         final bool isDesktop = constraints.maxWidth >= 850;
 
-        final bool tampilkanSearch =
-            selectedMenu == 1 || selectedMenu == 2;
+        final bool tampilkanSearch = selectedMenu == 1 || selectedMenu == 2;
 
         return Scaffold(
           body: SafeArea(
-            child: isDesktop
+            child: !isDataLoaded
+                ? const Center(child: CircularProgressIndicator())
+                : isDesktop
                 ? Row(
-              children: [
-                AppSidebar(
-                  selectedMenu: selectedMenu,
-                  onMenuSelected: pilihMenu,
-                ),
+                    children: [
+                      AppSidebar(
+                        selectedMenu: selectedMenu,
+                        onMenuSelected: pilihMenu,
+                      ),
 
-                Expanded(
-                  child: Column(
+                      Expanded(
+                        child: Column(
+                          children: [
+                            if (tampilkanSearch)
+                              AppHeader(
+                                controller: searchController,
+                                onSearch: cariLagu,
+                                onProfileTap: () => pilihMenu(4),
+                                avatarIcon: avatarProfil,
+                              )
+                            else if (selectedMenu == 0)
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(18),
+                                  child: IconButton(
+                                    tooltip: 'Profile',
+                                    onPressed: () => pilihMenu(4),
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .secondaryContainer,
+                                      foregroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .primary,
+                                    ),
+                                    icon: Icon(avatarProfil),
+                                  ),
+                                ),
+                              ),
+
+                            Expanded(child: halamanUtama()),
+
+                            MiniPlayer(
+                              currentSong: currentSong,
+                              isLoadingAudio: isLoadingAudio,
+                              isPlaying: isPlaying,
+                              avatarIcon: avatarProfil,
+                              onPrevious: laguSebelumnya,
+                              onNext: laguBerikutnya,
+                              onPlayPause: togglePlayPause,
+                              onOpenPlayer: () => pilihMenu(3),
+                              isFavorite:
+                                  currentSong != null &&
+                                  isFavorite(currentSong!),
+                              onFavoriteTap: () {
+                                if (currentSong != null) {
+                                  toggleFavorite(currentSong!);
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
                     children: [
                       if (tampilkanSearch)
                         AppHeader(
@@ -562,7 +598,10 @@ class _HomePageState extends State<HomePage> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: Padding(
-                            padding: const EdgeInsets.all(18),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 8,
+                            ),
                             child: IconButton(
                               tooltip: 'Profile',
                               onPressed: () => pilihMenu(4),
@@ -579,9 +618,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
 
-                      Expanded(
-                        child: halamanUtama(),
-                      ),
+                      Expanded(child: halamanUtama()),
 
                       MiniPlayer(
                         currentSong: currentSong,
@@ -592,97 +629,39 @@ class _HomePageState extends State<HomePage> {
                         onNext: laguBerikutnya,
                         onPlayPause: togglePlayPause,
                         onOpenPlayer: () => pilihMenu(3),
-                        isFavorite: currentSong != null && isFavorite(currentSong!),
+                        isFavorite:
+                            currentSong != null && isFavorite(currentSong!),
                         onFavoriteTap: () {
                           if (currentSong != null) {
                             toggleFavorite(currentSong!);
                           }
                         },
                       ),
+
+                      NavigationBar(
+                        selectedIndex: selectedMenu > 2 ? 0 : selectedMenu,
+                        onDestinationSelected: pilihMenu,
+                        destinations: const [
+                          NavigationDestination(
+                            icon: Icon(Icons.home_outlined),
+                            selectedIcon: Icon(Icons.home),
+                            label: 'Home',
+                          ),
+
+                          NavigationDestination(
+                            icon: Icon(Icons.search),
+                            label: 'Search',
+                          ),
+
+                          NavigationDestination(
+                            icon: Icon(Icons.library_music_outlined),
+                            selectedIcon: Icon(Icons.library_music),
+                            label: 'Library',
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                ),
-              ],
-            )
-                : Column(
-              children: [
-                if (tampilkanSearch)
-                  AppHeader(
-                    controller: searchController,
-                    onSearch: cariLagu,
-                    onProfileTap: () => pilihMenu(4),
-                    avatarIcon: avatarProfil,
-                  )
-                else if (selectedMenu == 0)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 8,
-                      ),
-                      child: IconButton(
-                        tooltip: 'Profile',
-                        onPressed: () => pilihMenu(4),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Theme.of(context)
-                              .colorScheme
-                              .secondaryContainer,
-                          foregroundColor: Theme.of(context)
-                              .colorScheme
-                              .primary,
-                        ),
-                        icon: Icon(avatarProfil),
-                      ),
-                    ),
-                  ),
-
-                Expanded(
-                  child: halamanUtama(),
-                ),
-
-                MiniPlayer(
-                  currentSong: currentSong,
-                  isLoadingAudio: isLoadingAudio,
-                  isPlaying: isPlaying,
-                  avatarIcon: avatarProfil,
-                  onPrevious: laguSebelumnya,
-                  onNext: laguBerikutnya,
-                  onPlayPause: togglePlayPause,
-                  onOpenPlayer: () => pilihMenu(3),
-                  isFavorite: currentSong != null && isFavorite(currentSong!),
-                  onFavoriteTap: () {
-                    if (currentSong != null) {
-                      toggleFavorite(currentSong!);
-                    }
-                  },
-                ),
-
-                NavigationBar(
-                  selectedIndex:
-                  selectedMenu > 2 ? 0 : selectedMenu,
-                  onDestinationSelected: pilihMenu,
-                  destinations: const [
-                    NavigationDestination(
-                      icon: Icon(Icons.home_outlined),
-                      selectedIcon: Icon(Icons.home),
-                      label: 'Home',
-                    ),
-
-                    NavigationDestination(
-                      icon: Icon(Icons.search),
-                      label: 'Search',
-                    ),
-
-                    NavigationDestination(
-                      icon: Icon(Icons.library_music_outlined),
-                      selectedIcon: Icon(Icons.library_music),
-                      label: 'Library',
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ),
         );
       },

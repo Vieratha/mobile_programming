@@ -76,28 +76,19 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (nama.isEmpty || email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Name and email cannot be empty.'),
-        ),
+        const SnackBar(content: Text('Name and email cannot be empty.')),
       );
       return;
     }
 
-    widget.onSave(
-      nama,
-      email,
-      bio,
-      avatarIcon,
-    );
+    widget.onSave(nama, email, bio, avatarIcon);
 
     setState(() {
       isEditing = false;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profile updated successfully!'),
-      ),
+      const SnackBar(content: Text('Profile updated successfully!')),
     );
   }
 
@@ -179,33 +170,22 @@ class _ProfilePageState extends State<ProfilePage> {
         width: 75,
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: avatarIcon == icon
-              ? warna.secondaryContainer
-              : warna.surface,
+          color: avatarIcon == icon ? warna.secondaryContainer : warna.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: avatarIcon == icon
-                ? warna.primary
-                : warna.outline,
+            color: avatarIcon == icon ? warna.primary : warna.outline,
           ),
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              size: 30,
-              color: warna.primary,
-            ),
+            Icon(icon, size: 30, color: warna.primary),
 
             const SizedBox(height: 6),
 
             Text(
               label,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                color: warna.onSurface,
-              ),
+              style: TextStyle(fontSize: 11, color: warna.onSurface),
             ),
           ],
         ),
@@ -244,9 +224,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           Text(
             'Manage your personal information.',
-            style: TextStyle(
-              color: warna.onSurfaceVariant,
-            ),
+            style: TextStyle(color: warna.onSurfaceVariant),
           ),
 
           const SizedBox(height: 35),
@@ -260,11 +238,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     CircleAvatar(
                       radius: 55,
                       backgroundColor: warna.secondaryContainer,
-                      child: Icon(
-                        avatarIcon,
-                        size: 55,
-                        color: warna.primary,
-                      ),
+                      child: Icon(avatarIcon, size: 55, color: warna.primary),
                     ),
 
                     Positioned(
@@ -302,9 +276,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 Text(
                   emailController.text,
-                  style: TextStyle(
-                    color: warna.onSurfaceVariant,
-                  ),
+                  style: TextStyle(color: warna.onSurfaceVariant),
                 ),
               ],
             ),
@@ -319,9 +291,7 @@ class _ProfilePageState extends State<ProfilePage> {
             decoration: BoxDecoration(
               color: warna.surface,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: warna.outline,
-              ),
+              border: Border.all(color: warna.outline),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,9 +309,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 Text(
                   'Display Name',
-                  style: TextStyle(
-                    color: warna.onSurfaceVariant,
-                  ),
+                  style: TextStyle(color: warna.onSurfaceVariant),
                 ),
 
                 const SizedBox(height: 8),
@@ -360,9 +328,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 Text(
                   'Email Address',
-                  style: TextStyle(
-                    color: warna.onSurfaceVariant,
-                  ),
+                  style: TextStyle(color: warna.onSurfaceVariant),
                 ),
 
                 const SizedBox(height: 8),
@@ -382,9 +348,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 Text(
                   'About Me',
-                  style: TextStyle(
-                    color: warna.onSurfaceVariant,
-                  ),
+                  style: TextStyle(color: warna.onSurfaceVariant),
                 ),
 
                 const SizedBox(height: 8),
@@ -441,10 +405,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Center(
             child: Text(
               'Made with music and love.',
-              style: TextStyle(
-                color: warna.onSurfaceVariant,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: warna.onSurfaceVariant, fontSize: 12),
             ),
           ),
         ],
