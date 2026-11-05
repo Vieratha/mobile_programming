@@ -4,7 +4,10 @@ class MiniPlayer extends StatelessWidget {
   final Map<String, dynamic>? currentSong;
   final bool isLoadingAudio;
   final bool isPlaying;
+  final bool isFavorite;
   final IconData avatarIcon;
+
+  final VoidCallback onFavoriteTap;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
   final VoidCallback onPlayPause;
@@ -15,13 +18,16 @@ class MiniPlayer extends StatelessWidget {
     required this.currentSong,
     required this.isLoadingAudio,
     required this.isPlaying,
+    required this.isFavorite,
     required this.avatarIcon,
+    required this.onFavoriteTap,
     required this.onPrevious,
     required this.onNext,
     required this.onPlayPause,
     required this.onOpenPlayer,
   });
 
+  // Mengatur artwork agar menggunakan resolusi lebih tinggi
   String artworkHD(Map<String, dynamic> song) {
     final String url = song['artworkUrl100'] ?? '';
 
@@ -69,7 +75,7 @@ class MiniPlayer extends StatelessWidget {
             )
           else
             Icon(
-              Icons.music_note,
+              avatarIcon,
               color: warna.primary,
               size: 30,
             ),
@@ -109,7 +115,24 @@ class MiniPlayer extends StatelessWidget {
             ),
           ),
 
-          // Membuka Now Playing
+          // Tombol Favorite
+          IconButton(
+            tooltip: isFavorite
+                ? 'Remove from Favorites'
+                : 'Add to Favorites',
+            onPressed:
+            currentSong == null ? null : onFavoriteTap,
+            icon: Icon(
+              isFavorite
+                  ? Icons.favorite
+                  : Icons.favorite_border,
+              color: isFavorite
+                  ? warna.primary
+                  : warna.onSurfaceVariant,
+            ),
+          ),
+
+          // Membuka halaman Now Playing
           IconButton(
             tooltip: 'Open Now Playing',
             onPressed: currentSong == null ? null : onOpenPlayer,
@@ -118,6 +141,7 @@ class MiniPlayer extends StatelessWidget {
 
           // Play dan Pause
           IconButton(
+            tooltip: isPlaying ? 'Pause' : 'Play',
             onPressed: currentSong == null || isLoadingAudio
                 ? null
                 : onPlayPause,
@@ -130,7 +154,9 @@ class MiniPlayer extends StatelessWidget {
             ),
           ),
 
+          // Lagu berikutnya
           IconButton(
+            tooltip: 'Next',
             onPressed: currentSong == null ? null : onNext,
             icon: const Icon(Icons.skip_next),
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class LibraryPage extends StatelessWidget {
   final List<Map<String, dynamic>> favoriteSongs;
   final Map<String, dynamic>? currentSong;
+  final bool isPlaying;
   final Function(Map<String, dynamic>) isFavorite;
   final Function(Map<String, dynamic>) onFavoriteTap;
   final Function(Map<String, dynamic>, int) onSelectSong;
@@ -11,6 +12,7 @@ class LibraryPage extends StatelessWidget {
     super.key,
     required this.favoriteSongs,
     required this.currentSong,
+    required this.isPlaying,
     required this.isFavorite,
     required this.onFavoriteTap,
     required this.onSelectSong,
@@ -53,7 +55,6 @@ class LibraryPage extends StatelessWidget {
 
           const SizedBox(height: 25),
 
-          // Jumlah lagu favorit
           Row(
             children: [
               Icon(
@@ -76,7 +77,6 @@ class LibraryPage extends StatelessWidget {
 
           const SizedBox(height: 15),
 
-          // Tampilan ketika belum ada lagu favorit
           if (favoriteSongs.isEmpty)
             Expanded(
               child: Center(
@@ -122,6 +122,10 @@ class LibraryPage extends StatelessWidget {
 
                   final bool selected =
                       currentSong?['trackId'] == song['trackId'];
+
+                  // Equalizer hanya ketika lagu sedang diputar
+                  final bool sedangDiputar =
+                      selected && isPlaying;
 
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -174,14 +178,15 @@ class LibraryPage extends StatelessWidget {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Memutar lagu
                         IconButton(
-                          tooltip: 'Play song',
+                          tooltip: sedangDiputar
+                              ? 'Currently playing'
+                              : 'Play song',
                           onPressed: () {
                             onSelectSong(song, index);
                           },
                           icon: Icon(
-                            selected
+                            sedangDiputar
                                 ? Icons.equalizer
                                 : Icons.play_circle_outline,
                             color: warna.primary,
@@ -189,7 +194,6 @@ class LibraryPage extends StatelessWidget {
                           ),
                         ),
 
-                        // Menghapus lagu dari favorit
                         IconButton(
                           tooltip: 'Remove from Favorites',
                           onPressed: () => onFavoriteTap(song),
@@ -203,7 +207,6 @@ class LibraryPage extends StatelessWidget {
                       ],
                     ),
 
-                    // Memutar lagu ketika baris dipilih
                     onTap: () {
                       onSelectSong(song, index);
                     },

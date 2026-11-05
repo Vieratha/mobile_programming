@@ -290,6 +290,7 @@ class _HomePageState extends State<HomePage> {
         songs: songs,
         isLoading: isLoading,
         currentSong: currentSong,
+        isPlaying: isPlaying,
         onSelectSong: putarLagu,
         favoriteSongs: favoriteSongs,
         onFavoriteTap: toggleFavorite,
@@ -301,6 +302,7 @@ class _HomePageState extends State<HomePage> {
       return LibraryPage(
         favoriteSongs: favoriteSongs,
         currentSong: currentSong,
+        isPlaying: isPlaying,
         isFavorite: isFavorite,
         onFavoriteTap: toggleFavorite,
         onSelectSong: putarLagu,
@@ -557,6 +559,12 @@ class _HomePageState extends State<HomePage> {
                         onNext: laguBerikutnya,
                         onPlayPause: togglePlayPause,
                         onOpenPlayer: () => pilihMenu(3),
+                        isFavorite: currentSong != null && isFavorite(currentSong!),
+                        onFavoriteTap: () {
+                          if (currentSong != null) {
+                            toggleFavorite(currentSong!);
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -609,6 +617,12 @@ class _HomePageState extends State<HomePage> {
                   onNext: laguBerikutnya,
                   onPlayPause: togglePlayPause,
                   onOpenPlayer: () => pilihMenu(3),
+                  isFavorite: currentSong != null && isFavorite(currentSong!),
+                  onFavoriteTap: () {
+                    if (currentSong != null) {
+                      toggleFavorite(currentSong!);
+                    }
+                  },
                 ),
 
                 NavigationBar(

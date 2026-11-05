@@ -4,6 +4,7 @@ class SearchPage extends StatelessWidget {
   final List songs;
   final bool isLoading;
   final Map<String, dynamic>? currentSong;
+  final bool isPlaying;
   final Function(Map<String, dynamic>, int) onSelectSong;
   final List<Map<String, dynamic>> favoriteSongs;
   final Function(Map<String, dynamic>) onFavoriteTap;
@@ -14,6 +15,7 @@ class SearchPage extends StatelessWidget {
     required this.songs,
     required this.isLoading,
     required this.currentSong,
+    required this.isPlaying,
     required this.onSelectSong,
     required this.favoriteSongs,
     required this.onFavoriteTap,
@@ -101,10 +103,15 @@ class SearchPage extends StatelessWidget {
 
                   final bool favorite = isFavorite(song);
 
+                  // Equalizer hanya muncul ketika lagu benar-benar diputar
+                  final bool sedangDiputar =
+                      isSelected && isPlaying;
+
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                       vertical: 5,
                     ),
+
                     selected: isSelected,
                     selectedTileColor: warna.secondaryContainer,
 
@@ -167,11 +174,11 @@ class SearchPage extends StatelessWidget {
                         ),
 
                         IconButton(
-                          tooltip: isSelected
-                              ? 'Currently selected'
+                          tooltip: sedangDiputar
+                              ? 'Currently playing'
                               : 'Play song',
                           icon: Icon(
-                            isSelected
+                            sedangDiputar
                                 ? Icons.equalizer
                                 : Icons.play_circle_outline,
                             color: warna.primary,
