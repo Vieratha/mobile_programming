@@ -66,7 +66,7 @@ class MiniPlayer extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // Informasi lagu
+          // Informasi lagu dan tombol membuka Now Playing
           Expanded(
             child: InkWell(
               onTap: currentSong == null ? null : onOpenPlayer,
@@ -83,7 +83,6 @@ class MiniPlayer extends StatelessWidget {
                       color: warna.onSurface,
                     ),
                   ),
-
                   Text(
                     currentSong?['artistName'] ??
                         'Choose a song to begin',
@@ -100,8 +99,9 @@ class MiniPlayer extends StatelessWidget {
           ),
 
           IconButton(
-            onPressed: currentSong == null ? null : onPrevious,
-            icon: const Icon(Icons.skip_previous),
+            tooltip: 'Open Now Playing',
+            onPressed: currentSong == null ? null : onOpenPlayer,
+            icon: const Icon(Icons.open_in_full),
           ),
 
           // Tombol Play dan Pause

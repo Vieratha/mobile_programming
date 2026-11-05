@@ -52,15 +52,6 @@ class AppSidebar extends StatelessWidget {
             2,
           ),
 
-          const SizedBox(height: 8),
-          // Menu untuk membuka profil pengguna
-          menuItem(
-            context,
-            Icons.person_outline,
-            'Profile',
-            4,
-          ),
-
           const Spacer(),
           const Divider(),
           Text(

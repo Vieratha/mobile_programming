@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -20,12 +21,15 @@ class _ProfilePageState extends State<ProfilePage> {
     text: 'Music is part of my everyday life.',
   );
 
-  // Menyimpan data profil sebelum perubahan
+  // Menyimpan data profil
   String namaAwal = 'Indra Kurniawan';
   String emailAwal = 'vietha@gmail.com';
   String bioAwal = 'Music is part of my everyday life.';
 
-  // Menentukan apakah profil sedang dalam mode edit
+  // Mengatur avatar profil
+  IconData avatarIcon = Icons.person;
+
+  // Menentukan apakah profil sedang diedit
   bool isEditing = false;
 
   // Mengaktifkan mode edit profil
@@ -37,6 +41,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // Menyimpan perubahan data profil
   void simpanProfil() {
+    if (namaController.text.trim().isEmpty ||
+        emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Name and email cannot be empty.'),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       namaAwal = namaController.text.trim();
       emailAwal = emailController.text.trim();
@@ -63,7 +77,106 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  // Mengakhiri penggunaan controller ketika halaman ditutup
+  // Menampilkan pilihan avatar
+  void pilihAvatar() {
+    final warna = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Choose Your Avatar',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: warna.onSurface,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: [
+                    avatarOption(Icons.person, 'Default'),
+                    avatarOption(Icons.face, 'Avatar 1'),
+                    avatarOption(Icons.face_3, 'Avatar 2'),
+                    avatarOption(Icons.face_4, 'Avatar 3'),
+                    avatarOption(Icons.face_6, 'Avatar 4'),
+                    avatarOption(Icons.music_note, 'Music'),
+                    avatarOption(Icons.headphones, 'Headphones'),
+                    avatarOption(Icons.star, 'Star'),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Membuat pilihan avatar
+  Widget avatarOption(IconData icon, String label) {
+    final warna = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: () {
+        setState(() {
+          avatarIcon = icon;
+        });
+
+        Navigator.pop(context);
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 75,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: avatarIcon == icon
+              ? warna.secondaryContainer
+              : warna.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: avatarIcon == icon
+                ? warna.primary
+                : warna.outline,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 30,
+              color: warna.primary,
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                color: warna.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     namaController.dispose();
@@ -103,21 +216,44 @@ class _ProfilePageState extends State<ProfilePage> {
 
           const SizedBox(height: 35),
 
-          // Menampilkan avatar dan informasi singkat pengguna
+          // Avatar dan informasi singkat pengguna
           Center(
             child: Column(
               children: [
-                CircleAvatar(
-                  radius: 48,
-                  backgroundColor: warna.secondaryContainer,
-                  child: Icon(
-                    Icons.person,
-                    size: 48,
-                    color: warna.primary,
-                  ),
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 55,
+                      backgroundColor: warna.secondaryContainer,
+                      child: Icon(
+                        avatarIcon,
+                        size: 55,
+                        color: warna.primary,
+                      ),
+                    ),
+
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Material(
+                        color: warna.primary,
+                        shape: const CircleBorder(),
+                        child: IconButton(
+                          onPressed: pilihAvatar,
+                          tooltip: 'Change Avatar',
+                          icon: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 15),
+
                 Text(
                   namaAwal,
                   style: TextStyle(
@@ -128,6 +264,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 const SizedBox(height: 5),
+
                 Text(
                   emailAwal,
                   style: TextStyle(
@@ -139,7 +276,8 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
 
           const SizedBox(height: 35),
-          // Bagian informasi pribadi pengguna
+
+          // Informasi pribadi pengguna
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(22),
@@ -150,7 +288,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 color: warna.outline,
               ),
             ),
-
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -164,6 +301,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 const SizedBox(height: 22),
+
                 // Input nama pengguna
                 Text(
                   'Display Name',
@@ -173,6 +311,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 const SizedBox(height: 8),
+
                 TextField(
                   controller: namaController,
                   enabled: isEditing,
@@ -183,6 +322,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 const SizedBox(height: 20),
+
                 // Input alamat email
                 Text(
                   'Email Address',
@@ -192,6 +332,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 const SizedBox(height: 8),
+
                 TextField(
                   controller: emailController,
                   enabled: isEditing,
@@ -203,6 +344,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 const SizedBox(height: 20),
+
                 // Input deskripsi singkat pengguna
                 Text(
                   'About Me',
@@ -212,6 +354,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 const SizedBox(height: 8),
+
                 TextField(
                   controller: bioController,
                   enabled: isEditing,
@@ -224,7 +367,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 const SizedBox(height: 25),
-                // Menampilkan tombol sesuai mode profil
+
+                // Tombol sesuai mode profil
                 if (!isEditing)
                   SizedBox(
                     width: double.infinity,
@@ -237,7 +381,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 else
                   Row(
                     children: [
-                      // Menyimpan perubahan profil
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: simpanProfil,
@@ -247,7 +390,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
 
                       const SizedBox(width: 12),
-                      // Membatalkan perubahan profil
+
                       Expanded(
                         child: OutlinedButton(
                           onPressed: batalEdit,
@@ -261,7 +404,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
 
           const SizedBox(height: 25),
-          // Teks penutup halaman profil
+
           Center(
             child: Text(
               'Made with music and love.',

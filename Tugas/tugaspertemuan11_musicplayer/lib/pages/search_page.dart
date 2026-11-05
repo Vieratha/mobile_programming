@@ -5,6 +5,9 @@ class SearchPage extends StatelessWidget {
   final bool isLoading;
   final Map<String, dynamic>? currentSong;
   final Function(Map<String, dynamic>, int) onSelectSong;
+  final List<Map<String, dynamic>> favoriteSongs;
+  final Function(Map<String, dynamic>) onFavoriteTap;
+  final Function(Map<String, dynamic>) isFavorite;
 
   const SearchPage({
     super.key,
@@ -12,7 +15,18 @@ class SearchPage extends StatelessWidget {
     required this.isLoading,
     required this.currentSong,
     required this.onSelectSong,
+    required this.favoriteSongs,
+    required this.onFavoriteTap,
+    required this.isFavorite,
   });
+
+  String artworkHD(Map<String, dynamic> song) {
+    final String url = song['artworkUrl100'] ?? '';
+
+    return url
+        .replaceAll('100x100bb', '600x600bb')
+        .replaceAll('100x100', '600x600');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +47,7 @@ class SearchPage extends StatelessWidget {
           ),
 
           const SizedBox(height: 8),
+
           Text(
             'Find songs and artists you love.',
             style: TextStyle(
@@ -41,15 +56,13 @@ class SearchPage extends StatelessWidget {
           ),
 
           const SizedBox(height: 22),
-          // Ini bagian untuk menampilkan loading
+
           if (isLoading)
             const Expanded(
               child: Center(
                 child: CircularProgressIndicator(),
               ),
             )
-
-          // Ini bagian jika hasil pencarian kosong
           else if (songs.isEmpty)
             Expanded(
               child: Center(
@@ -61,7 +74,6 @@ class SearchPage extends StatelessWidget {
                       size: 55,
                       color: warna.onSurfaceVariant,
                     ),
-
                     const SizedBox(height: 12),
                     Text(
                       'Search for your favorite music',
@@ -73,16 +85,19 @@ class SearchPage extends StatelessWidget {
                 ),
               ),
             )
-
-          // Ini bagian untuk menampilkan daftar lagu
           else
             Expanded(
               child: ListView.builder(
                 itemCount: songs.length,
                 itemBuilder: (context, index) {
-                  final song = songs[index];
+                  final song = Map<String, dynamic>.from(
+                    songs[index],
+                  );
+
                   final bool isSelected =
                       currentSong?['trackId'] == song['trackId'];
+
+                  final bool favorite = isFavorite(song);
 
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -94,11 +109,11 @@ class SearchPage extends StatelessWidget {
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.network(
-                        song['artworkUrl100'] ?? '',
+                        artworkHD(song),
                         width: 52,
                         height: 52,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) {
+                        errorBuilder: (_, _, _) {
                           return Container(
                             width: 52,
                             height: 52,
@@ -125,33 +140,47 @@ class SearchPage extends StatelessWidget {
                     subtitle: Text(
                       song['artistName'] ?? '-',
                       maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: warna.onSurfaceVariant,
                       ),
                     ),
 
-                    trailing: IconButton(
-                      icon: Icon(
-                        isSelected
-                            ? Icons.equalizer
-                            : Icons.play_circle_outline,
-                        color: warna.primary,
-                        size: 30,
-                      ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: favorite
+                              ? 'Remove from Favorites'
+                              : 'Add to Favorites',
+                          onPressed: () => onFavoriteTap(song),
+                          icon: Icon(
+                            favorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: favorite
+                                ? warna.primary
+                                : warna.onSurfaceVariant,
+                          ),
+                        ),
 
-                      onPressed: () {
-                        onSelectSong(
-                          Map<String, dynamic>.from(song),
-                          index,
-                        );
-                      },
+                        IconButton(
+                          icon: Icon(
+                            isSelected
+                                ? Icons.equalizer
+                                : Icons.play_circle_outline,
+                            color: warna.primary,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            onSelectSong(song, index);
+                          },
+                        ),
+                      ],
                     ),
 
                     onTap: () {
-                      onSelectSong(
-                        Map<String, dynamic>.from(song),
-                        index,
-                      );
+                      onSelectSong(song, index);
                     },
                   );
                 },

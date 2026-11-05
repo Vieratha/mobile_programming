@@ -18,10 +18,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Mengatur menu halaman yang sedang dipilih
+  // Mengatur halaman yang sedang dipilih
   int selectedMenu = 0;
 
-  // Menyimpan data pencarian lagu
+  // Mengelola kolom pencarian
   final TextEditingController searchController =
   TextEditingController();
 
@@ -29,7 +29,9 @@ class _HomePageState extends State<HomePage> {
 
   List songs = [];
   bool isLoading = false;
-  bool isPlaying = false;
+
+  // Menyimpan lagu favorit
+  List<Map<String, dynamic>> favoriteSongs = [];
 
   // Mengatur pemutar musik
   final AudioPlayer player = AudioPlayer();
@@ -37,12 +39,42 @@ class _HomePageState extends State<HomePage> {
   Map<String, dynamic>? currentSong;
   int currentIndex = -1;
   bool isLoadingAudio = false;
+  bool isPlaying = false;
 
   @override
   void dispose() {
     searchController.dispose();
     player.dispose();
     super.dispose();
+  }
+
+  // Mengambil artwork dengan resolusi lebih tinggi
+  String artworkHD(Map<String, dynamic> song) {
+    final String url = song['artworkUrl100'] ?? '';
+
+    return url
+        .replaceAll('100x100bb', '600x600bb')
+        .replaceAll('100x100', '600x600');
+  }
+
+  // Memeriksa apakah lagu sudah menjadi favorit
+  bool isFavorite(Map<String, dynamic> song) {
+    return favoriteSongs.any(
+          (item) => item['trackId'] == song['trackId'],
+    );
+  }
+
+  // Menambahkan atau menghapus lagu dari favorit
+  void toggleFavorite(Map<String, dynamic> song) {
+    setState(() {
+      if (isFavorite(song)) {
+        favoriteSongs.removeWhere(
+              (item) => item['trackId'] == song['trackId'],
+        );
+      } else {
+        favoriteSongs.add(song);
+      }
+    });
   }
 
   // Mengambil data lagu dari iTunes API
@@ -64,8 +96,17 @@ class _HomePageState extends State<HomePage> {
 
       if (!mounted) return;
 
+      // Mengubah URL artwork menjadi resolusi lebih tinggi
+      final hasilHD = hasil.map((item) {
+        final song = Map<String, dynamic>.from(item);
+
+        song['artworkUrl100'] = artworkHD(song);
+
+        return song;
+      }).toList();
+
       setState(() {
-        songs = hasil;
+        songs = hasilHD;
         isLoading = false;
       });
     } catch (e) {
@@ -84,8 +125,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Memutar lagu yang dipilih dari hasil pencarian
+  // Mencari lagu berdasarkan kategori musik
+  Future<void> cariKategori(String kategori) async {
+    searchController.text = kategori;
+    await cariLagu();
+  }
 
+  // Memutar lagu yang dipilih
   Future<void> putarLagu(
       Map<String, dynamic> song,
       int index,
@@ -175,7 +221,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Mengatur tombol play dan pause
+  // Mengatur tombol Play dan Pause
   Future<void> togglePlayPause() async {
     if (currentSong == null || isLoadingAudio) {
       return;
@@ -212,7 +258,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Mengubah halaman berdasarkan menu yang dipilih
+  // Mengubah halaman berdasarkan menu
   void pilihMenu(int index) {
     setState(() {
       selectedMenu = index;
@@ -227,6 +273,9 @@ class _HomePageState extends State<HomePage> {
         isLoading: isLoading,
         currentSong: currentSong,
         onSelectSong: putarLagu,
+        favoriteSongs: favoriteSongs,
+        onFavoriteTap: toggleFavorite,
+        isFavorite: isFavorite,
       );
     } else if (selectedMenu == 2) {
       return const LibraryPage();
@@ -360,38 +409,42 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Membuat kartu kategori musik
+  // Membuat kartu kategori musik yang bisa dipilih
   Widget kategoriCard(String title, IconData icon) {
     final warna = Theme.of(context).colorScheme;
 
-    return Container(
-      width: 145,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: warna.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: warna.outline),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            color: warna.primary,
-            size: 27,
-          ),
-
-          const SizedBox(height: 12),
-
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: warna.onSurface,
+    return InkWell(
+      onTap: () => cariKategori(title),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 145,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: warna.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: warna.outline),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              icon,
+              color: warna.primary,
+              size: 27,
             ),
-          ),
-        ],
+
+            const SizedBox(height: 12),
+
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: warna.onSurface,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
