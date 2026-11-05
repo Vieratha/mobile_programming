@@ -4,12 +4,14 @@ class AppHeader extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSearch;
   final VoidCallback onProfileTap;
+  final IconData avatarIcon;
 
   const AppHeader({
     super.key,
     required this.controller,
     required this.onSearch,
     required this.onProfileTap,
+    required this.avatarIcon,
   });
 
   @override
@@ -69,13 +71,14 @@ class AppHeader extends StatelessWidget {
 
           const SizedBox(width: 18),
 
+          // Avatar mengikuti pilihan pengguna
           InkWell(
             onTap: onProfileTap,
             borderRadius: BorderRadius.circular(30),
             child: CircleAvatar(
               backgroundColor: warna.secondaryContainer,
               child: Icon(
-                Icons.person_outline,
+                avatarIcon,
                 color: warna.primary,
               ),
             ),

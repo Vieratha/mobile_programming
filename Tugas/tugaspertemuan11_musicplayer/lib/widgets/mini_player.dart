@@ -4,6 +4,7 @@ class MiniPlayer extends StatelessWidget {
   final Map<String, dynamic>? currentSong;
   final bool isLoadingAudio;
   final bool isPlaying;
+  final IconData avatarIcon;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
   final VoidCallback onPlayPause;
@@ -14,11 +15,20 @@ class MiniPlayer extends StatelessWidget {
     required this.currentSong,
     required this.isLoadingAudio,
     required this.isPlaying,
+    required this.avatarIcon,
     required this.onPrevious,
     required this.onNext,
     required this.onPlayPause,
     required this.onOpenPlayer,
   });
+
+  String artworkHD(Map<String, dynamic> song) {
+    final String url = song['artworkUrl100'] ?? '';
+
+    return url
+        .replaceAll('100x100bb', '600x600bb')
+        .replaceAll('100x100', '600x600');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +50,7 @@ class MiniPlayer extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: Image.network(
-                currentSong!['artworkUrl100'] ?? '',
+                artworkHD(currentSong!),
                 width: 48,
                 height: 48,
                 fit: BoxFit.cover,
@@ -66,7 +76,7 @@ class MiniPlayer extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // Informasi lagu dan tombol membuka Now Playing
+          // Informasi lagu
           Expanded(
             child: InkWell(
               onTap: currentSong == null ? null : onOpenPlayer,
@@ -83,6 +93,7 @@ class MiniPlayer extends StatelessWidget {
                       color: warna.onSurface,
                     ),
                   ),
+
                   Text(
                     currentSong?['artistName'] ??
                         'Choose a song to begin',
@@ -98,13 +109,14 @@ class MiniPlayer extends StatelessWidget {
             ),
           ),
 
+          // Membuka Now Playing
           IconButton(
             tooltip: 'Open Now Playing',
             onPressed: currentSong == null ? null : onOpenPlayer,
             icon: const Icon(Icons.open_in_full),
           ),
 
-          // Tombol Play dan Pause
+          // Play dan Pause
           IconButton(
             onPressed: currentSong == null || isLoadingAudio
                 ? null

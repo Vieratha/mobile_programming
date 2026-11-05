@@ -18,11 +18,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Menu: Home = 0, Search = 1, Library = 2,
-  // Now Playing = 3, Profile = 4
   int selectedMenu = 0;
 
-  // Pencarian musik
   final TextEditingController searchController =
   TextEditingController();
 
@@ -55,7 +52,7 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // Mengubah URL artwork menjadi resolusi lebih tinggi
+  // Mengatur URL artwork resolusi tinggi
   String artworkHD(Map<String, dynamic> song) {
     final String url = song['artworkUrl100'] ?? '';
 
@@ -64,14 +61,14 @@ class _HomePageState extends State<HomePage> {
         .replaceAll('100x100', '600x600');
   }
 
-  // Memeriksa apakah lagu sudah menjadi favorit
+  // Memeriksa status Favorite
   bool isFavorite(Map<String, dynamic> song) {
     return favoriteSongs.any(
           (item) => item['trackId'] == song['trackId'],
     );
   }
 
-  // Menambahkan atau menghapus lagu favorit
+  // Mengubah status Favorite
   void toggleFavorite(Map<String, dynamic> song) {
     setState(() {
       if (isFavorite(song)) {
@@ -84,7 +81,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Menyimpan perubahan profil
+  // Menyimpan data profil
   void simpanDataProfil(
       String nama,
       String email,
@@ -99,7 +96,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Mengambil data lagu dari iTunes API
+  // Mengambil lagu dari iTunes API
   Future<void> cariLagu() async {
     final keyword = searchController.text.trim();
     final messenger = ScaffoldMessenger.of(context);
@@ -118,9 +115,7 @@ class _HomePageState extends State<HomePage> {
 
       final hasilHD = hasil.map((item) {
         final song = Map<String, dynamic>.from(item);
-
         song['artworkUrl100'] = artworkHD(song);
-
         return song;
       }).toList();
 
@@ -190,7 +185,6 @@ class _HomePageState extends State<HomePage> {
         isPlaying = true;
       });
 
-      // Memutar preview lagu
       await player.play();
 
       if (!mounted) return;
@@ -216,10 +210,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Memutar lagu berikutnya
+  // Lagu berikutnya
   Future<void> laguBerikutnya() async {
-    if (currentIndex >= 0 &&
-        currentIndex < songs.length - 1) {
+    if (currentIndex >= 0 && currentIndex < songs.length - 1) {
       final nextIndex = currentIndex + 1;
 
       await putarLagu(
@@ -229,10 +222,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Memutar lagu sebelumnya
+  // Lagu sebelumnya
   Future<void> laguSebelumnya() async {
-    if (currentIndex > 0 &&
-        currentIndex < songs.length) {
+    if (currentIndex > 0 && currentIndex < songs.length) {
       final previousIndex = currentIndex - 1;
 
       await putarLagu(
@@ -242,7 +234,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Mengatur tombol Play dan Pause
+  // Play dan Pause
   Future<void> togglePlayPause() async {
     if (currentSong == null || isLoadingAudio) return;
 
@@ -284,14 +276,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Kembali dari Now Playing ke halaman Search
+  // Kembali dari Now Playing ke halaman sebelumnya
   void kembaliDariNowPlaying() {
     setState(() {
       selectedMenu = 1;
     });
   }
 
-  // Menentukan halaman yang ditampilkan
+  // Mengatur halaman utama
   Widget halamanUtama() {
     if (selectedMenu == 1) {
       return SearchPage(
@@ -320,15 +312,23 @@ class _HomePageState extends State<HomePage> {
         currentSong: currentSong,
         isLoadingAudio: isLoadingAudio,
         isPlaying: isPlaying,
+        isFavorite: currentSong != null &&
+            isFavorite(currentSong!),
         onPrevious: laguSebelumnya,
         onNext: laguBerikutnya,
         onPlayPause: togglePlayPause,
         onBack: kembaliDariNowPlaying,
+        onFavoriteTap: () {
+          if (currentSong != null) {
+            toggleFavorite(currentSong!);
+          }
+        },
       );
     }
 
     if (selectedMenu == 4) {
       return ProfilePage(
+        key: const ValueKey('profile_page'),
         nama: namaProfil,
         email: emailProfil,
         bio: bioProfil,
@@ -340,7 +340,7 @@ class _HomePageState extends State<HomePage> {
     return halamanBeranda();
   }
 
-  // Menampilkan halaman Home
+  // Home
   Widget halamanBeranda() {
     final warna = Theme.of(context).colorScheme;
 
@@ -454,7 +454,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Membuat kartu kategori musik
+  // Kartu kategori
   Widget kategoriCard(String title, IconData icon) {
     final warna = Theme.of(context).colorScheme;
 
@@ -500,12 +500,9 @@ class _HomePageState extends State<HomePage> {
       builder: (context, constraints) {
         final bool isDesktop = constraints.maxWidth >= 850;
 
-        // Search bar hanya muncul di Search dan Library
         final bool tampilkanSearch =
             selectedMenu == 1 || selectedMenu == 2;
 
-        // Header tidak menampilkan tombol Profile
-        // ketika sedang berada di Profile atau Now Playing
         return Scaffold(
           body: SafeArea(
             child: isDesktop
@@ -524,6 +521,7 @@ class _HomePageState extends State<HomePage> {
                           controller: searchController,
                           onSearch: cariLagu,
                           onProfileTap: () => pilihMenu(4),
+                          avatarIcon: avatarProfil,
                         )
                       else if (selectedMenu == 0)
                         Align(
@@ -541,9 +539,7 @@ class _HomePageState extends State<HomePage> {
                                     .colorScheme
                                     .primary,
                               ),
-                              icon: const Icon(
-                                Icons.person_outline,
-                              ),
+                              icon: Icon(avatarProfil),
                             ),
                           ),
                         ),
@@ -556,6 +552,7 @@ class _HomePageState extends State<HomePage> {
                         currentSong: currentSong,
                         isLoadingAudio: isLoadingAudio,
                         isPlaying: isPlaying,
+                        avatarIcon: avatarProfil,
                         onPrevious: laguSebelumnya,
                         onNext: laguBerikutnya,
                         onPlayPause: togglePlayPause,
@@ -573,6 +570,7 @@ class _HomePageState extends State<HomePage> {
                     controller: searchController,
                     onSearch: cariLagu,
                     onProfileTap: () => pilihMenu(4),
+                    avatarIcon: avatarProfil,
                   )
                 else if (selectedMenu == 0)
                   Align(
@@ -593,9 +591,7 @@ class _HomePageState extends State<HomePage> {
                               .colorScheme
                               .primary,
                         ),
-                        icon: const Icon(
-                          Icons.person_outline,
-                        ),
+                        icon: Icon(avatarProfil),
                       ),
                     ),
                   ),
@@ -608,6 +604,7 @@ class _HomePageState extends State<HomePage> {
                   currentSong: currentSong,
                   isLoadingAudio: isLoadingAudio,
                   isPlaying: isPlaying,
+                  avatarIcon: avatarProfil,
                   onPrevious: laguSebelumnya,
                   onNext: laguBerikutnya,
                   onPlayPause: togglePlayPause,
