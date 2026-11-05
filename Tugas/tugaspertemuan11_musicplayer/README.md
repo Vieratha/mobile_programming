@@ -1,10 +1,10 @@
-# Ivylodia 🎵
+# Ivylodia
 
 **Ivylodia** adalah aplikasi pemutar musik sederhana berbasis Flutter yang memungkinkan pengguna mencari lagu, mendengarkan preview musik, menyimpan lagu favorit, dan mengelola profil pengguna.
 
 Aplikasi ini dibuat sebagai bagian dari tugas Mobile Programming dengan menerapkan konsep Flutter, pengelolaan state, responsive UI, API integration, dan JSON parsing.
 
-## ✨ Fitur Aplikasi
+## Fitur Aplikasi
 
 ### 1. Home
 - Halaman utama aplikasi.
@@ -38,7 +38,7 @@ Aplikasi ini dibuat sebagai bagian dari tugas Mobile Programming dengan menerapk
 - Memilih avatar.
 - Menyimpan perubahan profil.
 
-## 🛠️ Teknologi yang Digunakan
+## Teknologi yang Digunakan
 
 - **Flutter** – Framework pengembangan aplikasi.
 - **Dart** – Bahasa pemrograman.
@@ -49,7 +49,7 @@ Aplikasi ini dibuat sebagai bagian dari tugas Mobile Programming dengan menerapk
 - **just_audio** – Memutar preview audio.
 - **SharedPreferences** – Menyimpan data profil dan daftar Favorite secara lokal.
 
-## 🌐 API
+## API
 
 Ivylodia menggunakan iTunes Search API untuk mengambil informasi lagu.
 
@@ -64,7 +64,7 @@ Parameter yang digunakan:
 
 Data yang diperoleh kemudian diproses menggunakan JSON parsing untuk menampilkan informasi lagu pada aplikasi.
 
-## 📁 Struktur Project
+## Struktur Project
 
 ```text
 lib/
@@ -85,7 +85,7 @@ lib/
     └── song_tile.dart
 ```
 
-## 🚀 Cara Menjalankan Project
+## Cara Menjalankan Project
 
 1. Clone repository:
 
@@ -111,7 +111,7 @@ lib/
    flutter run
    ```
 
-## 📸 Screenshots
+## Screenshots
 
 Screenshot aplikasi dapat dilihat pada bagian dokumentasi repository ini.
 
