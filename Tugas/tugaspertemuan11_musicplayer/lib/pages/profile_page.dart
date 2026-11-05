@@ -1,48 +1,80 @@
-
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final String nama;
+  final String email;
+  final String bio;
+  final IconData avatarIcon;
+
+  final Function(String, String, String, IconData) onSave;
+
+  const ProfilePage({
+    super.key,
+    required this.nama,
+    required this.email,
+    required this.bio,
+    required this.avatarIcon,
+    required this.onSave,
+  });
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Controller untuk mengelola data profil
-  final TextEditingController namaController =
-  TextEditingController(text: 'Indra Kurniawan');
+  late TextEditingController namaController;
+  late TextEditingController emailController;
+  late TextEditingController bioController;
 
-  final TextEditingController emailController =
-  TextEditingController(text: 'vietha@gmail.com');
+  late IconData avatarIcon;
 
-  final TextEditingController bioController =
-  TextEditingController(
-    text: 'Music is part of my everyday life.',
-  );
-
-  // Menyimpan data profil
-  String namaAwal = 'Indra Kurniawan';
-  String emailAwal = 'vietha@gmail.com';
-  String bioAwal = 'Music is part of my everyday life.';
-
-  // Mengatur avatar profil
-  IconData avatarIcon = Icons.person;
-
-  // Menentukan apakah profil sedang diedit
   bool isEditing = false;
 
-  // Mengaktifkan mode edit profil
+  @override
+  void initState() {
+    super.initState();
+
+    namaController = TextEditingController(text: widget.nama);
+    emailController = TextEditingController(text: widget.email);
+    bioController = TextEditingController(text: widget.bio);
+
+    avatarIcon = widget.avatarIcon;
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfilePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Memperbarui data jika halaman menerima perubahan dari HomePage
+    if (oldWidget.nama != widget.nama) {
+      namaController.text = widget.nama;
+    }
+
+    if (oldWidget.email != widget.email) {
+      emailController.text = widget.email;
+    }
+
+    if (oldWidget.bio != widget.bio) {
+      bioController.text = widget.bio;
+    }
+
+    avatarIcon = widget.avatarIcon;
+  }
+
+  // Mengaktifkan mode edit
   void mulaiEdit() {
     setState(() {
       isEditing = true;
     });
   }
 
-  // Menyimpan perubahan data profil
+  // Menyimpan data profil
   void simpanProfil() {
-    if (namaController.text.trim().isEmpty ||
-        emailController.text.trim().isEmpty) {
+    final nama = namaController.text.trim();
+    final email = emailController.text.trim();
+    final bio = bioController.text.trim();
+
+    if (nama.isEmpty || email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Name and email cannot be empty.'),
@@ -51,11 +83,14 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
-    setState(() {
-      namaAwal = namaController.text.trim();
-      emailAwal = emailController.text.trim();
-      bioAwal = bioController.text.trim();
+    widget.onSave(
+      nama,
+      email,
+      bio,
+      avatarIcon,
+    );
 
+    setState(() {
       isEditing = false;
     });
 
@@ -66,12 +101,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Membatalkan perubahan dan mengembalikan data sebelumnya
+  // Membatalkan perubahan
   void batalEdit() {
     setState(() {
-      namaController.text = namaAwal;
-      emailController.text = emailAwal;
-      bioController.text = bioAwal;
+      namaController.text = widget.nama;
+      emailController.text = widget.email;
+      bioController.text = widget.bio;
+      avatarIcon = widget.avatarIcon;
 
       isEditing = false;
     });
@@ -195,7 +231,6 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Judul halaman profil
           Text(
             'My Profile',
             style: TextStyle(
@@ -216,7 +251,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           const SizedBox(height: 35),
 
-          // Avatar dan informasi singkat pengguna
+          // Avatar dan informasi pengguna
           Center(
             child: Column(
               children: [
@@ -255,7 +290,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 15),
 
                 Text(
-                  namaAwal,
+                  namaController.text,
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -266,7 +301,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 5),
 
                 Text(
-                  emailAwal,
+                  emailController.text,
                   style: TextStyle(
                     color: warna.onSurfaceVariant,
                   ),
@@ -277,7 +312,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           const SizedBox(height: 35),
 
-          // Informasi pribadi pengguna
+          // Informasi pribadi
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(22),
@@ -302,7 +337,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 const SizedBox(height: 22),
 
-                // Input nama pengguna
                 Text(
                   'Display Name',
                   style: TextStyle(
@@ -315,6 +349,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 TextField(
                   controller: namaController,
                   enabled: isEditing,
+                  onChanged: (_) => setState(() {}),
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
@@ -323,7 +358,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 const SizedBox(height: 20),
 
-                // Input alamat email
                 Text(
                   'Email Address',
                   style: TextStyle(
@@ -336,6 +370,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 TextField(
                   controller: emailController,
                   enabled: isEditing,
+                  onChanged: (_) => setState(() {}),
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.email_outlined),
@@ -345,7 +380,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 const SizedBox(height: 20),
 
-                // Input deskripsi singkat pengguna
                 Text(
                   'About Me',
                   style: TextStyle(
@@ -368,7 +402,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 const SizedBox(height: 25),
 
-                // Tombol sesuai mode profil
                 if (!isEditing)
                   SizedBox(
                     width: double.infinity,

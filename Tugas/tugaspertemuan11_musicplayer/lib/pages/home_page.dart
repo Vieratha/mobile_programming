@@ -22,6 +22,7 @@ class _HomePageState extends State<HomePage> {
   // Now Playing = 3, Profile = 4
   int selectedMenu = 0;
 
+  // Pencarian musik
   final TextEditingController searchController =
   TextEditingController();
 
@@ -30,7 +31,7 @@ class _HomePageState extends State<HomePage> {
   List songs = [];
   bool isLoading = false;
 
-  // Menyimpan lagu favorit
+  // Daftar lagu favorit
   List<Map<String, dynamic>> favoriteSongs = [];
 
   // Pemutar musik
@@ -40,6 +41,12 @@ class _HomePageState extends State<HomePage> {
   int currentIndex = -1;
   bool isLoadingAudio = false;
   bool isPlaying = false;
+
+  // Data profil pengguna
+  String namaProfil = 'Indra Kurniawan';
+  String emailProfil = 'vietha@gmail.com';
+  String bioProfil = 'Music is part of my everyday life.';
+  IconData avatarProfil = Icons.person;
 
   @override
   void dispose() {
@@ -57,7 +64,7 @@ class _HomePageState extends State<HomePage> {
         .replaceAll('100x100', '600x600');
   }
 
-  // Memeriksa apakah lagu menjadi favorit
+  // Memeriksa apakah lagu sudah menjadi favorit
   bool isFavorite(Map<String, dynamic> song) {
     return favoriteSongs.any(
           (item) => item['trackId'] == song['trackId'],
@@ -77,7 +84,22 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Mengambil lagu dari iTunes API
+  // Menyimpan perubahan profil
+  void simpanDataProfil(
+      String nama,
+      String email,
+      String bio,
+      IconData avatar,
+      ) {
+    setState(() {
+      namaProfil = nama;
+      emailProfil = email;
+      bioProfil = bio;
+      avatarProfil = avatar;
+    });
+  }
+
+  // Mengambil data lagu dari iTunes API
   Future<void> cariLagu() async {
     final keyword = searchController.text.trim();
     final messenger = ScaffoldMessenger.of(context);
@@ -262,14 +284,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Kembali ke halaman sebelumnya
+  // Kembali dari Now Playing ke halaman Search
   void kembaliDariNowPlaying() {
     setState(() {
       selectedMenu = 1;
     });
   }
 
-  // Menentukan halaman utama
+  // Menentukan halaman yang ditampilkan
   Widget halamanUtama() {
     if (selectedMenu == 1) {
       return SearchPage(
@@ -281,15 +303,19 @@ class _HomePageState extends State<HomePage> {
         onFavoriteTap: toggleFavorite,
         isFavorite: isFavorite,
       );
-    } else if (selectedMenu == 2) {
+    }
+
+    if (selectedMenu == 2) {
       return LibraryPage(
-        // favoriteSongs: favoriteSongs,
-        // currentSong: currentSong,
-        // isFavorite: isFavorite,
-        // onFavoriteTap: toggleFavorite,
-        // onSelectSong: putarLagu,
+        favoriteSongs: favoriteSongs,
+        currentSong: currentSong,
+        isFavorite: isFavorite,
+        onFavoriteTap: toggleFavorite,
+        onSelectSong: putarLagu,
       );
-    } else if (selectedMenu == 3) {
+    }
+
+    if (selectedMenu == 3) {
       return NowPlayingPage(
         currentSong: currentSong,
         isLoadingAudio: isLoadingAudio,
@@ -299,8 +325,16 @@ class _HomePageState extends State<HomePage> {
         onPlayPause: togglePlayPause,
         onBack: kembaliDariNowPlaying,
       );
-    } else if (selectedMenu == 4) {
-      return const ProfilePage();
+    }
+
+    if (selectedMenu == 4) {
+      return ProfilePage(
+        nama: namaProfil,
+        email: emailProfil,
+        bio: bioProfil,
+        avatarIcon: avatarProfil,
+        onSave: simpanDataProfil,
+      );
     }
 
     return halamanBeranda();
@@ -466,10 +500,12 @@ class _HomePageState extends State<HomePage> {
       builder: (context, constraints) {
         final bool isDesktop = constraints.maxWidth >= 850;
 
-        // Search bar hanya tampil di Search dan Library
+        // Search bar hanya muncul di Search dan Library
         final bool tampilkanSearch =
             selectedMenu == 1 || selectedMenu == 2;
 
+        // Header tidak menampilkan tombol Profile
+        // ketika sedang berada di Profile atau Now Playing
         return Scaffold(
           body: SafeArea(
             child: isDesktop
@@ -489,7 +525,7 @@ class _HomePageState extends State<HomePage> {
                           onSearch: cariLagu,
                           onProfileTap: () => pilihMenu(4),
                         )
-                      else
+                      else if (selectedMenu == 0)
                         Align(
                           alignment: Alignment.centerRight,
                           child: Padding(
@@ -497,11 +533,17 @@ class _HomePageState extends State<HomePage> {
                             child: IconButton(
                               tooltip: 'Profile',
                               onPressed: () => pilihMenu(4),
+                              style: IconButton.styleFrom(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer,
+                                foregroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary,
+                              ),
                               icon: const Icon(
                                 Icons.person_outline,
                               ),
-                              color: Theme.of(context)
-                                  .colorScheme.primary,
                             ),
                           ),
                         ),
@@ -532,7 +574,7 @@ class _HomePageState extends State<HomePage> {
                     onSearch: cariLagu,
                     onProfileTap: () => pilihMenu(4),
                   )
-                else
+                else if (selectedMenu == 0)
                   Align(
                     alignment: Alignment.centerRight,
                     child: Padding(
@@ -543,11 +585,17 @@ class _HomePageState extends State<HomePage> {
                       child: IconButton(
                         tooltip: 'Profile',
                         onPressed: () => pilihMenu(4),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .secondaryContainer,
+                          foregroundColor: Theme.of(context)
+                              .colorScheme
+                              .primary,
+                        ),
                         icon: const Icon(
                           Icons.person_outline,
                         ),
-                        color: Theme.of(context)
-                            .colorScheme.primary,
                       ),
                     ),
                   ),
@@ -576,10 +624,12 @@ class _HomePageState extends State<HomePage> {
                       selectedIcon: Icon(Icons.home),
                       label: 'Home',
                     ),
+
                     NavigationDestination(
                       icon: Icon(Icons.search),
                       label: 'Search',
                     ),
+
                     NavigationDestination(
                       icon: Icon(Icons.library_music_outlined),
                       selectedIcon: Icon(Icons.library_music),
